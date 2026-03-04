@@ -1,0 +1,100 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "WebEditor",
+  "projectDescription": "A completely dynamic, JSX-based rich text editor powered by ProseMirror",
+  "theme": "palm",
+  "primaryColor": "#3b82f6",
+  "lightColor": "#60a5fa",
+  "darkColor": "#2563eb",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/overview",
+              "concepts/markdown-jsx",
+              "concepts/components",
+              "concepts/marks",
+              "concepts/theme-system"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/basic-usage",
+              "guides/theme-management",
+              "guides/custom-components",
+              "guides/command-menu",
+              "guides/marks-menu"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Components",
+            "pages": [
+              "api/webeditor",
+              "api/components/overview"
+            ]
+          },
+          {
+            "group": "Hooks",
+            "pages": [
+              "api/hooks/use-theme"
+            ]
+          },
+          {
+            "group": "Built-in Components",
+            "pages": [
+              "api/built-in/accordion",
+              "api/built-in/badge",
+              "api/built-in/callout",
+              "api/built-in/card",
+              "api/built-in/code-snippet",
+              "api/built-in/columns",
+              "api/built-in/field",
+              "api/built-in/frame",
+              "api/built-in/icon",
+              "api/built-in/mermaid",
+              "api/built-in/steps",
+              "api/built-in/tabs"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Write Markdown and JSX seamlessly",
+    "Add custom nestable components",
+    "Command menu (/) for inserting components",
+    "Marks menu (/) for text formatting",
+    "Automatic theme detection with light/dark mode",
+    "Built-in rich components (cards, callouts, code snippets, diagrams)",
+    "ProseMirror-powered editing experience",
+    "Full TypeScript support"
+  ],
+  "publicApiSurface": [
+    "WebEditor - Main editor component",
+    "useTheme - Theme management hook",
+    "Theme - Type for theme values ('light' | 'dark' | 'auto')",
+    "Built-in components: accordion, badge, callout, card, code_snippet, columns, field, frame, icon, mermaid, step, tabs",
+    "Text marks: bold, italic, strikethrough, code, tooltip",
+    "Command menu system for component insertion",
+    "Marks menu system for text formatting"
+  ]
+}
