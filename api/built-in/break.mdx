@@ -1,0 +1,138 @@
+---
+title: Break
+description: Spacing component for adding vertical space between content
+---
+
+## Overview
+
+The Break component adds customizable vertical spacing between content blocks. It's useful for controlling layout and visual rhythm in your document.
+
+## Insertion
+
+Insert a break using the command menu:
+
+1. Press `/` to open the command menu
+2. Search for "Break"
+3. Press Enter to insert
+
+## Attributes
+
+<ParamField path="size" type="number" default="24">
+  The height of the spacing in pixels (1-200px)
+</ParamField>
+
+## Node specification
+
+```tsx
+export const breakNodeSpec: NodeSpec = {
+  group: "block",
+  content: "",
+  attrs: {
+    size: { default: 24 },
+  },
+  selectable: true,
+  atom: true,
+  defining: true,
+
+  parseDOM: [
+    {
+      tag: "break",
+      getAttrs: (dom) => ({
+        size: parseInt(dom.getAttribute("size") || "24"),
+      }),
+    },
+  ],
+
+  toDOM: (node) => [
+    "break",
+    {
+      size: node.attrs.size.toString(),
+      style: `height: ${node.attrs.size}px; display: block;`,
+    },
+  ],
+};
+```
+
+## Usage examples
+
+### Default break (24px)
+
+Use the command menu to insert a break with the default 24px spacing:
+
+```html
+<break size="24"></break>
+```
+
+### Custom spacing
+
+Click on a break to edit its size. You can set any value from 1 to 200 pixels:
+
+```html
+<break size="48"></break>
+```
+
+### Input rule
+
+You can also create a break using the input rule syntax:
+
+```html
+<break />
+<break size="32" />
+```
+
+Type the above syntax and it will be converted to a break component.
+
+## Editing
+
+In edit mode, the break component displays interactive features:
+
+- **Hover state**: A dotted line appears when you hover over the break
+- **Proximity indicator**: The dotted line also appears when your cursor is near the break
+- **Click to edit**: Click anywhere on the break to open a modal where you can adjust the size
+- **Visual label**: Shows the current size (e.g., "Break (24px) - Click to edit")
+
+The edit modal allows you to:
+- Set a custom size between 1 and 200 pixels
+- Preview the current size
+- Save or cancel changes
+
+## DOM structure
+
+The break component renders as:
+
+```html
+<break size="24" style="height: 24px; display: block;"></break>
+```
+
+## TypeScript types
+
+```tsx
+interface BreakAttrs {
+  size: number; // 1-200px
+}
+```
+
+## Insert function
+
+Programmatically insert a break:
+
+```tsx
+import { insertBreak } from "@devscribe-team/webeditor";
+
+// In your editor state
+const tr = insertBreak(state);
+dispatch(tr);
+```
+
+The `insertBreak` function:
+- Creates a break node with default 24px size
+- Replaces the current selection
+- Positions the cursor after the break
+- Inserts a new paragraph if needed to continue editing
+
+## Best practices
+
+- Use consistent spacing sizes throughout your document for visual harmony
+- Common spacing values: 24px (default), 32px (medium), 48px (large)
+- Avoid very small values (< 12px) or very large values (> 100px) for better readability
+- In read-only mode, the break renders as pure spacing with no visual indicators

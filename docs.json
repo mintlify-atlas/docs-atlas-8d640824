@@ -74,6 +74,7 @@
             "pages": [
               "api/built-in/accordion",
               "api/built-in/badge",
+              "api/built-in/break",
               "api/built-in/callout",
               "api/built-in/card",
               "api/built-in/code-snippet",
