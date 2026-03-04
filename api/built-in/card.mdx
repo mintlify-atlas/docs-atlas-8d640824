@@ -1,0 +1,241 @@
+---
+title: Card
+description: Versatile container component with customizable icon, title, and layout options
+---
+
+The Card component provides a flexible container for organizing content with optional icon, title, and support for both horizontal and vertical layouts.
+
+## Node specification
+
+The card is a block-level node that can contain other block content.
+
+<ParamField path="title" type="string" default="'Card Title'">
+  The heading text displayed in the card
+</ParamField>
+
+<ParamField path="icon" type="string | null" default="null">
+  Lucide icon name to display in the card (e.g., "FileText", "Book", "Star")
+</ParamField>
+
+<ParamField path="showIcon" type="boolean" default="true">
+  Whether to display the icon
+</ParamField>
+
+<ParamField path="horizontal" type="boolean" default="false">
+  Layout orientation. `false` for vertical (icon on top), `true` for horizontal (icon on left)
+</ParamField>
+
+<ParamField path="href" type="string | null" default="null">
+  Optional URL to make the entire card clickable as a link
+</ParamField>
+
+## Usage
+
+### Insert via command menu
+
+Type `/card` in the editor and select the Card option from the command menu. The card will be inserted with a default title and icon.
+
+### Insert via input rule
+
+Type `<card` followed by optional attributes:
+
+<CodeGroup>
+```html Basic
+<card />
+```
+
+```html With title and icon
+<card title="Getting Started" icon="Rocket" />
+```
+
+```html Horizontal layout
+<card title="Documentation" icon="Book" horizontal />
+```
+
+```html Clickable card
+<card title="Visit Docs" icon="ExternalLink" href="https://docs.example.com" />
+```
+</CodeGroup>
+
+### Programmatic insertion
+
+Use the `insertCard` function to insert a card programmatically:
+
+```typescript
+import { insertCard } from "@/editor/components/card";
+
+const transaction = insertCard(editorState);
+view.dispatch(transaction);
+```
+
+## Attributes
+
+The card node spec defines the following attributes:
+
+```typescript
+attrs: {
+  title: { default: "Card Title" },
+  icon: { default: null },
+  showIcon: { default: true },
+  horizontal: { default: false },
+  href: { default: null },
+}
+```
+
+## Layout modes
+
+The card supports two layout orientations:
+
+### Vertical layout (default)
+
+In vertical mode, the icon appears above the title and content:
+
+```typescript
+function VerticalLayout({ iconElement, title, children }) {
+  return (
+    <>
+      {iconElement && <div className="p-3 sm:p-4 pb-0">{iconElement}</div>}
+      <div className="p-3 sm:p-4">
+        <CardContent title={title}>{children}</CardContent>
+      </div>
+    </>
+  );
+}
+```
+
+### Horizontal layout
+
+In horizontal mode, the icon appears to the left of the title and content:
+
+```typescript
+function HorizontalLayout({ iconElement, title, children }) {
+  return (
+    <div className="flex flex-col sm:flex-row gap-3 p-3 sm:p-4">
+      {iconElement && <div className="flex-shrink-0 mt-0.5 self-start">{iconElement}</div>}
+      <CardContent title={title}>{children}</CardContent>
+    </div>
+  );
+}
+```
+
+## Icon system
+
+The card uses dynamic icon loading from Lucide React:
+
+<ParamField path="normalizeIconName" type="function">
+  Converts icon names to PascalCase to match Lucide's convention. Handles kebab-case, snake_case, and camelCase inputs.
+</ParamField>
+
+<ParamField path="loadIcon" type="async function">
+  Dynamically imports icons from `lucide-react` with caching to avoid re-imports. Returns `null` if icon not found.
+</ParamField>
+
+<ParamField path="resolveIcon" type="function">
+  Utility that resolves icon names to React elements using the DynamicIcon component.
+</ParamField>
+
+<Note>
+  Icons are loaded asynchronously and cached for performance. A fallback icon (FileText) is used during loading or if the specified icon is not found.
+</Note>
+
+## Editing
+
+In edit mode, hover over the card to reveal editing options:
+
+- **Edit title**: Click the title text to open the title edit modal
+- **Edit icon**: Click the icon to open the icon edit modal
+- **Toggle layout**: Click the layout toggle button to switch between vertical and horizontal layouts
+
+The layout toggle button displays in the top-right corner on hover:
+
+```typescript
+<button onClick={() => toggleLayout()} title="Switch to horizontal layout">
+  <RotateCcw className="w-3 h-3" />
+  <span>{horizontal ? "Vertical" : "Horizontal"}</span>
+</button>
+```
+
+## Clickable cards
+
+When the `href` attribute is set, the card becomes clickable:
+
+```typescript
+const isClickable = Boolean(href);
+const cardClasses = getCardClasses(horizontal, isClickable);
+
+{isClickable && (
+  <a href={href} className="absolute inset-0 z-10" target="_blank" rel="noopener noreferrer">
+    <span className="sr-only">Open {title}</span>
+  </a>
+)}
+```
+
+Clickable cards include hover effects:
+- Shadow elevation
+- Scale transform (1.01)
+- Border color transition to primary
+
+## DOM structure
+
+The card renders with the following structure:
+
+```html
+<card 
+  title="Card Title"
+  icon="FileText"
+  show-icon="true"
+  horizontal="false"
+  href="null">
+  <!-- block content -->
+</card>
+```
+
+## Examples
+
+### Feature card (vertical)
+
+```html
+<card title="Powerful Editor" icon="Zap">
+  Built on ProseMirror with support for rich formatting and custom components.
+</card>
+```
+
+### Documentation link (horizontal)
+
+```html
+<card 
+  title="API Reference" 
+  icon="Book" 
+  href="https://docs.example.com/api"
+  horizontal>
+  Complete documentation for all API endpoints.
+</card>
+```
+
+### Card grid
+
+Combine multiple cards with the columns component:
+
+```html
+<columns cols="3">
+  <column>
+    <card title="Installation" icon="Download">
+      Quick start guide...
+    </card>
+  </column>
+  <column>
+    <card title="Configuration" icon="Settings">
+      Configure your setup...
+    </card>
+  </column>
+  <column>
+    <card title="Deployment" icon="Rocket">
+      Deploy to production...
+    </card>
+  </column>
+</columns>
+```
+
+<Tip>
+  Use horizontal layout for compact, list-style cards and vertical layout for feature showcases or landing page sections.
+</Tip>

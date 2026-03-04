@@ -1,0 +1,264 @@
+---
+title: Theme management
+description: Control light and dark mode themes with the useTheme hook
+---
+
+## Overview
+
+WebEditor includes automatic theme detection and management with support for:
+- **Auto mode**: Follows system preferences
+- **Light mode**: Forces light theme
+- **Dark mode**: Forces dark theme
+- **Persistent storage**: Saves user preference to localStorage
+- **Reactive updates**: Responds to system theme changes
+
+## Automatic theme detection
+
+By default, WebEditor automatically detects and applies your browser's preferred theme:
+
+```tsx
+import { WebEditor } from "@devscribe-team/webeditor";
+import "@devscribe-team/webeditor/styles";
+
+function App() {
+  return <WebEditor />;
+}
+```
+
+The editor will:
+1. Check for a saved theme preference in localStorage
+2. Fall back to the system's preferred color scheme
+3. Apply the appropriate theme classes to the document root
+
+## Using the useTheme hook
+
+The `useTheme` hook provides full control over the editor's theme:
+
+```tsx
+import { WebEditor, useTheme } from "@devscribe-team/webeditor";
+import "@devscribe-team/webeditor/styles";
+
+function App() {
+  const { theme, resolvedTheme, setTheme } = useTheme();
+
+  return (
+    <div>
+      <div className="theme-controls">
+        <button onClick={() => setTheme("light")}>Light</button>
+        <button onClick={() => setTheme("dark")}>Dark</button>
+        <button onClick={() => setTheme("auto")}>Auto</button>
+        <span>
+          Current: {theme} (resolved: {resolvedTheme})
+        </span>
+      </div>
+      <WebEditor />
+    </div>
+  );
+}
+```
+
+## Hook return values
+
+### theme
+
+The current theme setting: `"light"`, `"dark"`, or `"auto"`
+
+```tsx
+const { theme } = useTheme();
+console.log(theme); // "auto", "light", or "dark"
+```
+
+### resolvedTheme
+
+The actual theme being displayed: `"light"` or `"dark"`
+
+```tsx
+const { resolvedTheme } = useTheme();
+console.log(resolvedTheme); // "light" or "dark"
+```
+
+When `theme` is set to `"auto"`, `resolvedTheme` reflects the system preference. Otherwise, it matches the theme setting.
+
+<Note>
+Use `resolvedTheme` when you need to know the actual theme being displayed, regardless of whether it's set manually or automatically.
+</Note>
+
+### setTheme
+
+Function to change the theme:
+
+```tsx
+const { setTheme } = useTheme();
+
+// Set to light mode
+setTheme("light");
+
+// Set to dark mode
+setTheme("dark");
+
+// Set to auto (follow system)
+setTheme("auto");
+```
+
+The new theme preference is automatically saved to localStorage under the key `"webeditor-theme"`.
+
+### toggleTheme
+
+Function to cycle through themes: auto → light → dark → auto
+
+```tsx
+const { toggleTheme } = useTheme();
+
+// Cycles through: auto → light → dark → auto
+toggleTheme();
+```
+
+## Theme persistence
+
+Theme preferences are automatically saved to `localStorage`:
+
+```tsx
+// The hook automatically handles persistence
+const { setTheme } = useTheme();
+
+setTheme("dark");
+// Saved to localStorage as: webeditor-theme = "dark"
+```
+
+On subsequent page loads, the editor will:
+1. Read the saved theme from localStorage
+2. Apply it immediately
+3. Continue watching for system preference changes (if in auto mode)
+
+## Reactive system updates
+
+When using auto mode, the editor listens for system theme changes:
+
+```tsx
+const { theme, resolvedTheme } = useTheme();
+
+// When theme is "auto":
+// - User changes system from light to dark
+// - resolvedTheme automatically updates to "dark"
+// - Editor re-renders with dark theme
+```
+
+<Tip>
+Auto mode provides the best user experience by respecting system-wide preferences and time-of-day settings.
+</Tip>
+
+## Building a theme toggle
+
+Here's a complete example of a theme toggle component:
+
+```tsx
+import { useTheme } from "@devscribe-team/webeditor";
+import { Moon, Sun, Monitor } from "lucide-react";
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div className="flex gap-2">
+      <button
+        onClick={() => setTheme("light")}
+        className={theme === "light" ? "active" : ""}
+        aria-label="Light mode"
+      >
+        <Sun className="w-4 h-4" />
+      </button>
+
+      <button
+        onClick={() => setTheme("dark")}
+        className={theme === "dark" ? "active" : ""}
+        aria-label="Dark mode"
+      >
+        <Moon className="w-4 h-4" />
+      </button>
+
+      <button
+        onClick={() => setTheme("auto")}
+        className={theme === "auto" ? "active" : ""}
+        aria-label="Auto mode"
+      >
+        <Monitor className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+```
+
+## How it works
+
+The theme system works by:
+
+1. **Reading initial preference** from localStorage or system (`use-theme.ts:11-25`)
+2. **Applying theme classes** to `document.documentElement` (`use-theme.ts:95-105`)
+3. **Watching system changes** with `window.matchMedia` (`use-theme.ts:58-92`)
+4. **Persisting changes** to localStorage on theme updates (`use-theme.ts:39-45`)
+
+<Accordion title="View the useTheme implementation">
+```tsx
+export function useTheme(): {
+  theme: Theme;
+  resolvedTheme: 'light' | 'dark';
+  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
+} {
+  // Initialize from localStorage or default to auto
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'auto';
+    const savedTheme = localStorage.getItem('webeditor-theme') as Theme | null;
+    if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'auto')) {
+      return savedTheme;
+    }
+    return 'auto';
+  });
+
+  // Resolve actual theme being displayed
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light';
+    if (theme === 'auto') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return theme === 'dark' ? 'dark' : 'light';
+  });
+
+  // Save to localStorage and update state
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('webeditor-theme', newTheme);
+    }
+  };
+
+  // Apply theme class to document root
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const root = document.documentElement;
+      root.classList.remove('dark', 'light');
+      root.classList.add(resolvedTheme);
+    }
+  }, [resolvedTheme]);
+
+  return { theme, resolvedTheme, setTheme, toggleTheme };
+}
+```
+</Accordion>
+
+## Best practices
+
+<Steps>
+  <Step title="Use auto mode as default">
+    Let users' system preferences take precedence by defaulting to auto mode
+  </Step>
+  <Step title="Provide manual controls">
+    Always offer light/dark toggle buttons for users who want to override
+  </Step>
+  <Step title="Indicate current theme">
+    Show which theme is active in your UI to avoid confusion
+  </Step>
+  <Step title="Test both themes">
+    Ensure your custom styles work in both light and dark modes
+  </Step>
+</Steps>

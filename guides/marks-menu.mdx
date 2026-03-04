@@ -1,0 +1,400 @@
+---
+title: Marks menu
+description: Apply text formatting marks using the slash command system
+---
+
+## Overview
+
+The marks menu allows you to apply text formatting (bold, italic, etc.) to selected text using the `/` command. Unlike the component command menu, the marks menu only appears when you have text selected.
+
+## Triggering the marks menu
+
+Press `/` when:
+- You have text selected (not an empty selection)
+- The selection contains only text (not nodes like images or components)
+
+The menu appears near your cursor position:
+
+```tsx
+import { WebEditor } from "@devscribe-team/webeditor";
+import "@devscribe-team/webeditor/styles";
+
+function App() {
+  return <WebEditor />;
+}
+
+// In the editor:
+// 1. Select some text
+// 2. Press / while text is selected
+// 3. Marks menu appears
+// 4. Choose a formatting option
+```
+
+<Note>
+If no text is selected, pressing `/` opens the [command menu](/guides/command-menu) instead.
+</Note>
+
+## How it works
+
+The marks system (`index.tsx:295-308`) checks your selection:
+
+```tsx
+// When you press /:
+if (!empty && hasTextSelection(state)) {
+  // Text is selected → show marks menu
+  openMarksDialog();
+} else if (empty && inParagraph) {
+  // Empty selection → show command menu
+  openDialog();
+}
+```
+
+## Navigating the marks menu
+
+<Steps>
+  <Step title="Select text">
+    Highlight the text you want to format
+  </Step>
+  <Step title="Open menu">
+    Press `/` to open the marks menu
+  </Step>
+  <Step title="Search">
+    Type to filter marks by name or description
+  </Step>
+  <Step title="Navigate">
+    Use Arrow Up/Down keys to select marks
+  </Step>
+  <Step title="Apply">
+    Press Enter to apply the selected mark
+  </Step>
+  <Step title="Cancel">
+    Press Escape to close the menu
+  </Step>
+</Steps>
+
+## Available marks
+
+### Bold
+
+**Description:** Make text bold
+
+**Shortcut:** Select text and press `/`, then choose "Bold"
+
+**ProseMirror mark:** `strong`
+
+**Usage:**
+```markdown
+This is **bold text**
+```
+
+The mark is toggled on the selection (`marks-system.tsx:39-49`):
+
+```tsx
+execute: (state, dispatch) => {
+  const { from, to } = state.selection;
+  if (from === to) return false;
+
+  if (dispatch) {
+    const mark = state.schema.marks.strong.create();
+    const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+    dispatch(tr);
+  }
+  return true;
+}
+```
+
+### Italic
+
+**Description:** Make text italic
+
+**Shortcut:** Select text and press `/`, then choose "Italic"
+
+**ProseMirror mark:** `em`
+
+**Usage:**
+```markdown
+This is *italic text*
+```
+
+### Strikethrough
+
+**Description:** Strike through text
+
+**Shortcut:** Select text and press `/`, then choose "Strikethrough"
+
+**ProseMirror mark:** `strikethrough`
+
+**Usage:**
+```markdown
+This is ~~strikethrough text~~
+```
+
+### Inline code
+
+**Description:** Format as inline code
+
+**Shortcut:** Select text and press `/`, then choose "Inline Code"
+
+**ProseMirror mark:** `code`
+
+**Usage:**
+```markdown
+This is `inline code`
+```
+
+<Tip>
+Use inline code for short code snippets, variable names, or technical terms within paragraphs.
+</Tip>
+
+### Tooltip
+
+**Description:** Add a tooltip to the selected text
+
+**Shortcut:** Select text and press `/`, then choose "Tooltip"
+
+**ProseMirror mark:** `tooltip_mark`
+
+**Attributes:** `tooltip` (string)
+
+**Usage:**
+1. Select text
+2. Open marks menu with `/`
+3. Choose "Tooltip"
+4. Enter tooltip text in the modal
+5. The text becomes hoverable with a dotted underline
+
+**Editing tooltips:**
+- Click on tooltipped text to edit or remove the tooltip
+- Supports nested content in tooltip text
+
+<Note>
+Tooltips require a special prompt modal since they need additional input (the tooltip text).
+</Note>
+
+## Mark command types
+
+The marks menu includes two types of commands:
+
+### Simple mark commands
+
+Toggle marks immediately without additional input:
+
+```tsx
+export interface SimpleMarkCommand {
+  id: string;
+  name: string;
+  description: string;
+  icon: typeof Bold;
+  execute: (state: EditorState, dispatch?: (tr: Transaction) => void) => boolean;
+}
+```
+
+Examples: Bold, Italic, Strikethrough, Inline Code
+
+### Tooltip mark commands
+
+Require a prompt for additional attributes:
+
+```tsx
+export interface TooltipMarkCommand {
+  id: string;
+  name: string;
+  description: string;
+  icon: typeof Info;
+  type: "tooltip";
+  requiresAttributes: true;
+}
+```
+
+Example: Tooltip (requires tooltip text input)
+
+## Marks menu definition
+
+The marks menu is defined in `marks-system.tsx:33-111`:
+
+```tsx
+export const marksMenuSetup: MarkCommandItem[] = [
+  {
+    id: "bold",
+    name: "Bold",
+    description: "Make text bold",
+    icon: Bold,
+    execute: (state, dispatch) => {
+      const { from, to } = state.selection;
+      if (from === to) return false;
+      if (dispatch) {
+        const mark = state.schema.marks.strong.create();
+        const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+        dispatch(tr);
+      }
+      return true;
+    },
+  },
+  {
+    id: "italic",
+    name: "Italic",
+    description: "Make text italic",
+    icon: Italic,
+    execute: (state, dispatch) => {
+      const { from, to } = state.selection;
+      if (from === to) return false;
+      if (dispatch) {
+        const mark = state.schema.marks.em.create();
+        const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+        dispatch(tr);
+      }
+      return true;
+    },
+  },
+  // ... more marks
+];
+```
+
+## Marks menu filtering
+
+Like the command menu, the marks menu supports real-time search:
+
+```tsx
+// Type "/bold" to filter:
+// ✓ Bold - Make text bold
+// ✗ Italic - (hidden, doesn't match)
+```
+
+The search matches (`marks-system.tsx:138-157`):
+- Mark name (e.g., "Bold")
+- Mark description (e.g., "Make text bold")
+- Mark ID (e.g., "bold")
+
+## Keyboard shortcuts
+
+Marks menu keyboard controls (`index.tsx:425-485`):
+
+| Key | Action |
+|-----|--------|
+| `/` | Open marks menu (with text selected) |
+| Arrow Down | Select next mark |
+| Arrow Up | Select previous mark |
+| Enter | Apply selected mark |
+| Escape | Close menu |
+| Type | Filter marks |
+
+<Note>
+The marks menu uses the same keyboard handler as the command menu (`onKeyDown` function).
+</Note>
+
+## Applying marks programmatically
+
+You can apply marks directly using helper functions:
+
+```tsx
+import { executeTooltipMark } from "./utils/marks-system";
+
+// Apply a tooltip mark
+const { state, dispatch } = view;
+const tooltipText = "This is a tooltip";
+executeTooltipMark(state, dispatch, tooltipText);
+```
+
+The helper function (`marks-system.tsx:165-178`):
+
+```tsx
+export function executeTooltipMark(
+  state: EditorState,
+  dispatch: (tr: Transaction) => void,
+  tooltipText: string,
+): boolean {
+  const { from, to } = state.selection;
+  if (from === to) return false; // No selection
+
+  const mark = state.schema.marks.tooltip_mark.create({ tooltip: tooltipText });
+  const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+  dispatch(tr);
+  return true;
+}
+```
+
+## Checking for text selection
+
+Use the `hasTextSelection` helper to determine if text is selected:
+
+```tsx
+import { hasTextSelection } from "./utils/marks-system";
+
+if (hasTextSelection(state)) {
+  // Show marks menu
+} else {
+  // Show command menu
+}
+```
+
+The helper function (`marks-system.tsx:160-162`):
+
+```tsx
+export function hasTextSelection(state: EditorState): boolean {
+  return !state.selection.empty;
+}
+```
+
+## Tooltip click handling
+
+Tooltip marks have special click handling (`tooltip-click-plugin.tsx`):
+
+```tsx
+const plugin = createTooltipClickPlugin({
+  onTooltipClick: (tooltipText, from, to) => {
+    // Open edit modal
+    setTooltipText(tooltipText);
+    setTooltipEditRange({ from, to });
+    setTooltipPromptOpen(true);
+  },
+});
+```
+
+When a user clicks on tooltipped text:
+1. The click is detected by the plugin
+2. The tooltip text and range are extracted
+3. The edit modal opens with the current tooltip text
+4. User can edit or remove the tooltip
+
+<Tip>
+This pattern allows inline editing of marks with attributes without requiring selection.
+</Tip>
+
+## Tooltip prompt modal
+
+The tooltip prompt (`TooltipPromptModal.tsx`) supports:
+- Creating new tooltips
+- Editing existing tooltips
+- Removing tooltips
+
+```tsx
+<TooltipPromptModal
+  open={tooltipPromptOpen}
+  initialTooltip={tooltipText}
+  isEditing={isEditingTooltip}
+  onCloseAction={() => setTooltipPromptOpen(false)}
+  onSubmitAction={(text) => executeTooltipMark(state, dispatch, text)}
+  onRemoveAction={() => removeTooltipMark(view, from, to)}
+/>
+```
+
+## Best practices
+
+<Steps>
+  <Step title="Select before marking">
+    Always select text before opening the marks menu
+  </Step>
+  <Step title="Use appropriate marks">
+    Choose marks that match your content type (bold for emphasis, code for technical terms)
+  </Step>
+  <Step title="Keep tooltips concise">
+    Tooltip text should be brief and helpful, not lengthy explanations
+  </Step>
+  <Step title="Don't over-format">
+    Too many marks can make content harder to read
+  </Step>
+</Steps>
+
+<Warning>
+Marks cannot be extended without modifying the source code. The available marks are defined in `marks-system.tsx:33-111`.
+</Warning>

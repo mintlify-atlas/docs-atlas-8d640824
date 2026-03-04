@@ -1,0 +1,288 @@
+---
+title: "WebEditor"
+description: "The main editor component for creating rich text content with markdown support and custom components"
+---
+
+## Overview
+
+The `WebEditor` component is a powerful React-based rich text editor built on ProseMirror. It provides a WYSIWYG editing experience with markdown support, custom components, and extensible functionality.
+
+## Installation
+
+```bash
+npm install @devscribe-team/webeditor
+```
+
+The package requires React 18+ and Tailwind CSS 4+ as peer dependencies.
+
+## Basic usage
+
+```tsx
+import { WebEditor } from '@devscribe-team/webeditor';
+import '@devscribe-team/webeditor/styles';
+
+function MyEditor() {
+  const [content, setContent] = useState('');
+
+  return (
+    <WebEditor 
+      value={content}
+      onChange={(newContent) => setContent(newContent)}
+      editable={true}
+    />
+  );
+}
+```
+
+## Props
+
+The WebEditor component accepts the following props:
+
+<ParamField path="value" type="string" default="undefined">
+  The initial content of the editor in HTML format. The editor can parse both HTML and markdown-like MDX syntax.
+  
+  When `value` changes, the editor will re-initialize with the new content.
+</ParamField>
+
+<ParamField path="editable" type="boolean" default="true">
+  Controls whether the editor is in edit mode or read-only mode.
+  
+  - When `true`: Users can edit content, insert components, and modify formatting
+  - When `false`: Editor displays content in read-only mode without editing controls
+</ParamField>
+
+<ParamField path="onChange" type="(doc: string) => void" default="undefined">
+  Callback function triggered whenever the editor content changes.
+  
+  Receives the updated document content as an HTML string. This fires on every transaction, so consider debouncing for performance-sensitive applications.
+  
+  ```tsx
+  <WebEditor 
+    onChange={(html) => {
+      console.log('Content updated:', html);
+      // Save to database, update state, etc.
+    }}
+  />
+  ```
+</ParamField>
+
+## Type signature
+
+```typescript
+function WebEditor(props: {
+  value?: string;
+  editable?: boolean;
+  onChange?: (doc: string) => void;
+}): JSX.Element
+```
+
+## Features
+
+### Command menu
+
+Press `/` in an empty paragraph to open the command menu, which provides access to:
+
+- Built-in components (cards, callouts, badges, etc.)
+- Formatting options
+- Code snippets with syntax highlighting
+- Mermaid diagrams
+- And more
+
+The command menu is searchable - just start typing to filter available commands.
+
+### Marks menu
+
+Select text and press `/` to open the marks menu for inline formatting:
+
+- Bold, italic, underline
+- Code inline
+- Links and tooltips
+- Custom text styling
+
+### Theme support
+
+The editor automatically detects and responds to system theme preferences (light/dark mode). It uses the `useTheme` hook internally to manage theme state.
+
+### Keyboard shortcuts
+
+- `Cmd/Ctrl + Z`: Undo
+- `Cmd/Ctrl + R`: Redo
+- `/`: Open command or marks menu
+- `Escape`: Close active menu
+- `Arrow Up/Down`: Navigate menu items
+- `Enter`: Execute selected command
+
+## Content format
+
+### Input format
+
+The editor accepts content in multiple formats:
+
+<Tabs>
+  <Tab title="HTML">
+    ```html
+    <card title="My Card" icon="FileText">
+      <p>Card content goes here</p>
+    </card>
+    <callout type="info">
+      <p>Important information</p>
+    </callout>
+    ```
+  </Tab>
+  
+  <Tab title="Markdown">
+    ```markdown
+    # Heading 1
+    
+    This is a paragraph with **bold** and *italic* text.
+    
+    - List item 1
+    - List item 2
+    ```
+  </Tab>
+</Tabs>
+
+### Output format
+
+The `onChange` callback returns content as HTML:
+
+```html
+<card title="Example Card" icon="FileText" show-icon="true" horizontal="false">
+  <p>This is the card content</p>
+</card>
+<p>Regular paragraph text</p>
+<callout type="warning">
+  <p>Warning message here</p>
+</callout>
+```
+
+## Examples
+
+### Controlled editor
+
+```tsx
+import { WebEditor } from '@devscribe-team/webeditor';
+import '@devscribe-team/webeditor/styles';
+import { useState } from 'react';
+
+function ControlledEditor() {
+  const [content, setContent] = useState('<p>Initial content</p>');
+
+  const handleSave = () => {
+    // Save content to backend
+    fetch('/api/save', {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+  };
+
+  return (
+    <div>
+      <WebEditor 
+        value={content}
+        onChange={setContent}
+        editable={true}
+      />
+      <button onClick={handleSave}>Save</button>
+    </div>
+  );
+}
+```
+
+### Read-only viewer
+
+```tsx
+import { WebEditor } from '@devscribe-team/webeditor';
+import '@devscribe-team/webeditor/styles';
+
+function ContentViewer({ content }: { content: string }) {
+  return (
+    <WebEditor 
+      value={content}
+      editable={false}
+    />
+  );
+}
+```
+
+### With debounced onChange
+
+```tsx
+import { WebEditor } from '@devscribe-team/webeditor';
+import '@devscribe-team/webeditor/styles';
+import { useState, useCallback } from 'react';
+import { debounce } from 'lodash';
+
+function DebouncedEditor() {
+  const [content, setContent] = useState('');
+
+  // Debounce saves to avoid excessive API calls
+  const debouncedSave = useCallback(
+    debounce((html: string) => {
+      fetch('/api/autosave', {
+        method: 'POST',
+        body: JSON.stringify({ content: html }),
+      });
+    }, 1000),
+    []
+  );
+
+  const handleChange = (html: string) => {
+    setContent(html);
+    debouncedSave(html);
+  };
+
+  return (
+    <WebEditor 
+      value={content}
+      onChange={handleChange}
+    />
+  );
+}
+```
+
+## Styling
+
+The editor uses Tailwind CSS for styling. Make sure to import the styles:
+
+```tsx
+import '@devscribe-team/webeditor/styles';
+```
+
+The editor automatically applies theme classes to the document root:
+
+- `.light` for light mode
+- `.dark` for dark mode
+
+You can customize the appearance by overriding CSS variables in your Tailwind config.
+
+## Performance considerations
+
+<Note>
+  The `onChange` callback fires on every transaction. For performance-sensitive applications, consider debouncing updates or only persisting changes on blur/save events.
+</Note>
+
+### Best practices
+
+1. **Debounce onChange**: Use a debounce utility to limit API calls
+2. **Memoize callbacks**: Use `useCallback` for onChange handlers
+3. **Lazy loading**: Load the editor component lazily if not immediately needed
+4. **Content size**: For very large documents, consider pagination or lazy rendering
+
+## Browser support
+
+The WebEditor supports all modern browsers:
+
+- Chrome/Edge 90+
+- Firefox 88+
+- Safari 14+
+
+<Note>
+  Internet Explorer is not supported. The editor requires modern JavaScript features including ES6+ and Web APIs.
+</Note>
+
+## See also
+
+- [Components Overview](/api/components/overview) - Learn about available built-in components
+- [useTheme Hook](/api/hooks/use-theme) - Theme management utilities
+- [Quickstart Guide](/quickstart) - Get started quickly

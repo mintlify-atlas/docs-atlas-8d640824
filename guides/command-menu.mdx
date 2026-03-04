@@ -1,0 +1,400 @@
+---
+title: Command menu
+description: Insert components and content using the slash command system
+---
+
+## Overview
+
+The command menu is triggered by pressing `/` in the editor. It provides a searchable list of components and content types you can insert.
+
+## Triggering the command menu
+
+Press `/` when:
+- The cursor is in an empty paragraph
+- The cursor is at the very beginning of a line
+
+The menu appears at your cursor position:
+
+```tsx
+import { WebEditor } from "@devscribe-team/webeditor";
+import "@devscribe-team/webeditor/styles";
+
+function App() {
+  return <WebEditor />;
+}
+
+// In the editor:
+// 1. Press / in an empty line
+// 2. Command menu appears
+// 3. Type to search or use arrow keys to navigate
+```
+
+<Note>
+The command menu will not trigger if you're typing inside a CodeMirror code editor (inside a code snippet component).
+</Note>
+
+## Navigating the menu
+
+<Steps>
+  <Step title="Open menu">
+    Press `/` in an empty line or at the start of a line
+  </Step>
+  <Step title="Search">
+    Type to filter commands by name or description
+  </Step>
+  <Step title="Navigate">
+    Use Arrow Up/Down keys to select commands
+  </Step>
+  <Step title="Select">
+    Press Enter to insert the selected command
+  </Step>
+  <Step title="Cancel">
+    Press Escape to close the menu
+  </Step>
+</Steps>
+
+## Available commands
+
+### Text formatting
+
+<Accordion title="Heading 1">
+**Description:** Big section heading
+
+**Shortcut:** Type `# ` (hash followed by space)
+
+**Usage:**
+```markdown
+# This becomes a heading 1
+```
+</Accordion>
+
+<Accordion title="Heading 2">
+**Description:** Medium section heading
+
+**Shortcut:** Type `## ` (two hashes followed by space)
+
+**Usage:**
+```markdown
+## This becomes a heading 2
+```
+</Accordion>
+
+<Accordion title="Heading 3">
+**Description:** Small section heading
+
+**Shortcut:** Type `### ` (three hashes followed by space)
+
+**Usage:**
+```markdown
+### This becomes a heading 3
+```
+</Accordion>
+
+<Accordion title="Text">
+**Description:** Just start writing with plain text
+
+**Usage:** Creates a plain paragraph (this is the default)
+</Accordion>
+
+<Accordion title="Bulleted list">
+**Description:** Create a simple bulleted list
+
+**Shortcut:** Type `- ` (dash followed by space)
+
+**Usage:**
+```markdown
+- First item
+- Second item
+- Third item
+```
+</Accordion>
+
+<Accordion title="Quote">
+**Description:** Capture a quote
+
+**Shortcut:** Type `> ` (greater than followed by space)
+
+**Usage:**
+```markdown
+> This is a blockquote
+```
+</Accordion>
+
+### Code components
+
+<Accordion title="Code">
+**Description:** Capture a code snippet with syntax highlighting
+
+**Component:** `code_snippet`
+
+**Attributes:** `language`, `code`
+
+**Usage:** Insert via command menu, then click to edit code and select language
+</Accordion>
+
+<Accordion title="Mermaid">
+**Description:** Create a mermaid diagram
+
+**Component:** `mermaid`
+
+**Attributes:** `code`
+
+**Usage:**
+```markdown
+<mermaid>
+graph TD
+  A[Start] --> B[Process]
+  B --> C[End]
+</mermaid>
+```
+</Accordion>
+
+### Container components
+
+<Accordion title="Card">
+**Description:** Create a horizontal or vertical card
+
+**Component:** `card`
+
+**Attributes:** `title`, `icon`, `showIcon`, `horizontal`, `href`
+
+**Usage:**
+- Insert via command menu
+- Click title or icon to edit
+- Hover to toggle layout
+- Supports nested content
+</Accordion>
+
+<Accordion title="Callout">
+**Description:** Add a callout (info, warning, caution, etc.)
+
+**Component:** `callout`
+
+**Attributes:** `type` (info | warning | caution | important | tip)
+
+**Usage:**
+- Insert via command menu
+- Click icon to change callout type
+- Type inside to add content
+</Accordion>
+
+<Accordion title="Accordion">
+**Description:** Add a collapsible accordion section
+
+**Component:** `accordion`
+
+**Attributes:** `title`
+
+**Usage:**
+- Insert via command menu
+- Click title to edit
+- Type inside to add content
+- Users can expand/collapse in read-only mode
+</Accordion>
+
+<Accordion title="Frame">
+**Description:** Add a frame with padding and optional caption
+
+**Component:** `frame`
+
+**Attributes:** `caption`
+
+**Usage:**
+- Insert via command menu
+- Click caption area to edit
+- Type inside to add framed content
+</Accordion>
+
+<Accordion title="Step">
+**Description:** Create a numbered step (for tutorials)
+
+**Component:** `step`
+
+**Attributes:** `title`
+
+**Usage:**
+- Insert via command menu
+- Multiple steps auto-number sequentially
+- Click title to edit
+</Accordion>
+
+<Accordion title="Columns">
+**Description:** Create a responsive columns/grid layout
+
+**Component:** `columns`
+
+**Attributes:** `cols` (number of columns)
+
+**Usage:**
+- Insert via command menu
+- Contains `column` child components
+- Responsive layout collapses on mobile
+</Accordion>
+
+<Accordion title="Tabs">
+**Description:** Create a tabbed interface
+
+**Component:** `tabs`
+
+**Attributes:** `tabs` (array of tab labels)
+
+**Usage:**
+- Insert via command menu
+- Edit tab labels in modal
+- Add content for each tab
+</Accordion>
+
+<Accordion title="Parameter Field">
+**Description:** Document a parameter with name, type, and description
+
+**Component:** `field`
+
+**Attributes:** `name`, `type`, `required`
+
+**Usage:**
+- Insert via command menu
+- Perfect for API documentation
+- Shows type and required badge
+</Accordion>
+
+### Inline components
+
+<Accordion title="Icon">
+**Description:** Insert an icon from Lucide icons
+
+**Component:** `icon`
+
+**Attributes:** `icon`, `size`
+
+**Usage:**
+- Insert via command menu
+- Click to change icon or size
+- All Lucide icons supported
+</Accordion>
+
+<Accordion title="Badge">
+**Description:** Add a badge with custom text and styling
+
+**Component:** `badge`
+
+**Attributes:** `label`, `variant` (default | secondary | destructive | outline)
+
+**Usage:**
+- Insert via command menu
+- Click to edit label and style
+- Inline element
+</Accordion>
+
+<Accordion title="Break">
+**Description:** Add spacing between content
+
+**Component:** `break`
+
+**Attributes:** `size` (small | medium | large)
+
+**Usage:**
+- Insert via command menu
+- Creates vertical spacing
+- Useful for visual separation
+</Accordion>
+
+## Command filtering
+
+The command menu supports real-time search:
+
+```tsx
+// Type "/card" to filter:
+// ✓ Card - Create a horizontal or vertical card
+// ✗ Callout - (hidden, doesn't match)
+// ✗ Accordion - (hidden, doesn't match)
+```
+
+The search matches:
+- Command name (e.g., "Card")
+- Command description (e.g., "horizontal or vertical")
+- Command ID (e.g., "card")
+
+<Tip>
+Search is case-insensitive and matches partial strings. Type "/code" to see both "Code" and "Code Snippet".
+</Tip>
+
+## Command menu implementation
+
+The command menu is defined in `command-system.tsx` and includes:
+
+```tsx
+export const commandMenuSetup: CommandItem[] = [
+  { id: "h1", name: "Heading 1", icon: Heading1, description: "Big section heading", write: "# " },
+  { id: "h2", name: "Heading 2", icon: Heading2, description: "Medium section heading", write: "## " },
+  { id: "h3", name: "Heading 3", icon: Heading3, description: "Small section heading", write: "### " },
+  { id: "paragraph", name: "Text", icon: AlignLeft, description: "Just start writing with plain text", write: "" },
+  { id: "bullet", name: "Bulleted list", icon: List, description: "Create a simple bulleted list", write: "- " },
+  { id: "code", name: "Code", icon: Code, description: "Capture a code snippet", componentName: "code_snippet" },
+  { id: "mermaid", name: "Mermaid", icon: Network, description: "Create a mermaid diagram", componentName: "mermaid" },
+  { id: "quote", name: "Quote", icon: Quote, description: "Capture a quote", write: "> " },
+  { separator: true },
+  // ... component commands
+];
+```
+
+Each command is one of three types:
+
+1. **SimpleCommand** - Writes text (e.g., `"# "` for Heading 1)
+2. **ComponentCommand** - Inserts a component node (e.g., `card`, `callout`)
+3. **CommandSeparator** - Visual separator in the menu
+
+## Keyboard shortcuts
+
+Command menu keyboard controls (`index.tsx:425-485`):
+
+| Key | Action |
+|-----|--------|
+| `/` | Open command menu |
+| Arrow Down | Select next command |
+| Arrow Up | Select previous command |
+| Enter | Insert selected command |
+| Escape | Close menu |
+| Type | Filter commands |
+
+<Note>
+The menu automatically skips separator items when navigating with arrow keys.
+</Note>
+
+## Custom command hint
+
+When the cursor is in an empty paragraph, a hint appears:
+
+```
+Press '/' for commands and marks
+```
+
+This hint (`index.tsx:714-729`):
+- Appears only when `editable={true}`
+- Positions at the cursor location
+- Disappears when typing begins
+- Updates on scroll and resize
+
+<Tip>
+The hint helps new users discover the command menu feature.
+</Tip>
+
+## Extending the command menu
+
+To add new commands, modify `command-system.tsx:60-162`:
+
+```tsx
+export const commandMenuSetup: CommandItem[] = [
+  // ... existing commands
+  {
+    id: "my-component",
+    name: "My Component",
+    icon: MyIcon,
+    description: "Insert my custom component",
+    componentName: "my_component",
+  },
+];
+```
+
+<Warning>
+Adding custom commands requires modifying the source code and implementing the corresponding NodeView and insert function.
+</Warning>

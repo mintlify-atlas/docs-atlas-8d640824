@@ -1,97 +1,183 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: WebEditor Documentation
+description: A completely dynamic, JSX-based rich text editor powered by ProseMirror
+mode: custom
 ---
 
-## Setting up
+<div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 dark:from-blue-900 dark:via-blue-800 dark:to-slate-900 py-20">
+  <div className="max-w-6xl mx-auto px-6 lg:px-8">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div className="lg:col-span-7">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+          Build rich text experiences with WebEditor
+        </h1>
+        <p className="text-lg sm:text-xl text-blue-100 max-w-2xl mb-8">
+          The alternative to BlockNote and TipTap you've been waiting for. Write Markdown and JSX seamlessly, add custom components, and provide a world-class editing experience.
+        </p>
+        <div className="flex flex-wrap gap-4">
+          <a
+            href="/quickstart"
+            className="inline-flex items-center px-6 py-3 rounded-lg bg-white text-blue-600 font-semibold hover:bg-blue-50 transition-colors"
+          >
+            Get started
+            <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+          <a
+            href="/api/webeditor"
+            className="inline-flex items-center px-6 py-3 rounded-lg border border-white/30 bg-white/10 text-white font-semibold hover:bg-white/20 transition-colors"
+          >
+            API Reference
+          </a>
+        </div>
+      </div>
+      <div className="lg:col-span-5 hidden lg:block">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 dark:from-blue-600 dark:to-blue-800 rounded-2xl blur-3xl opacity-20"></div>
+          <div className="relative bg-white/10 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            <div className="font-mono text-sm text-white">
+              <div className="text-blue-200 dark:text-blue-300">import</div>
+              <div className="ml-4 text-white">{'{ WebEditor }'}</div>
+              <div className="text-blue-200 dark:text-blue-300">from</div>
+              <div className="ml-4 text-green-300">"@devscribe-team/webeditor"</div>
+              <div className="mt-4 text-blue-200 dark:text-blue-300">function</div>
+              <div className="ml-4 text-yellow-300">App() {'{'}</div>
+              <div className="ml-8 text-blue-200 dark:text-blue-300">return</div>
+              <div className="ml-12">{'<'}<span className="text-pink-300">WebEditor</span> {'/>'}</div>
+              <div className="ml-4 text-yellow-300">{'}'}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-Get your documentation site up and running in minutes.
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="text-center mb-12">
+    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      Quick start
+    </h2>
+    <p className="text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+      Get up and running with WebEditor in minutes
+    </p>
+  </div>
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+  <Steps>
+    <Step title="Install the package">
+      Install WebEditor using your preferred package manager.
 
-## Make it yours
+      <CodeGroup>
+      ```bash npm
+      npm install @devscribe-team/webeditor
+      ```
+      ```bash yarn
+      yarn add @devscribe-team/webeditor
+      ```
+      ```bash pnpm
+      pnpm add @devscribe-team/webeditor
+      ```
+      </CodeGroup>
 
-Design a docs site that looks great and empowers your users.
+      <Note>WebEditor requires React 18+ and Tailwind CSS 4+</Note>
+    </Step>
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+    <Step title="Import the editor and styles">
+      Import the WebEditor component and its styles into your application.
 
-## Create beautiful pages
+      ```tsx
+      import { WebEditor } from "@devscribe-team/webeditor";
+      import "@devscribe-team/webeditor/styles";
 
-Everything you need to create world-class documentation.
+      function App() {
+        return <WebEditor />;
+      }
+      ```
+    </Step>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+    <Step title="Start editing">
+      The editor automatically detects your browser's theme preference and provides a rich editing experience with built-in components and markdown support.
 
-## Need inspiration?
+      <Tip>Press `/` to open the command menu and insert components or format text</Tip>
+    </Step>
+  </Steps>
+</div>
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="text-center mb-12">
+    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      Key features
+    </h2>
+    <p className="text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+      Everything you need to build modern rich text editing experiences
+    </p>
+  </div>
+
+  <CardGroup cols={3}>
+    <Card title="Markdown + JSX" icon="markdown" href="/concepts/markdown-jsx">
+      Write Markdown and JSX seamlessly in the same document
+    </Card>
+    <Card title="Custom components" icon="puzzle-piece" href="/concepts/components">
+      Add nestable custom components with a powerful command system
+    </Card>
+    <Card title="Command menu" icon="terminal" href="/guides/command-menu">
+      Insert components and format text with an intuitive `/` command menu
+    </Card>
+    <Card title="Theme detection" icon="moon" href="/concepts/theme-system">
+      Automatic light/dark mode with manual override support
+    </Card>
+    <Card title="Built-in components" icon="boxes-stacked" href="/api/built-in/card">
+      Rich components including cards, callouts, code snippets, and diagrams
+    </Card>
+    <Card title="TypeScript support" icon="code" href="/api/webeditor">
+      Full type safety with comprehensive TypeScript definitions
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="text-center mb-12">
+    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      Explore the docs
+    </h2>
+    <p className="text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+      Learn how to use WebEditor in your projects
+    </p>
+  </div>
+
+  <CardGroup cols={2}>
+    <Card title="Installation" icon="download" href="/installation">
+      Set up WebEditor in your React application
+    </Card>
+    <Card title="Basic usage" icon="rocket" href="/guides/basic-usage">
+      Learn the fundamentals of working with WebEditor
+    </Card>
+    <Card title="Theme management" icon="palette" href="/guides/theme-management">
+      Control light and dark mode programmatically
+    </Card>
+    <Card title="API reference" icon="book-open" href="/api/webeditor">
+      Explore the complete API documentation
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-20 mb-16 max-w-5xl mx-auto px-6">
+  <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-900 dark:to-slate-800 rounded-2xl p-8 sm:p-12 text-center border border-blue-500/20">
+    <h2 className="text-3xl font-bold text-white mb-4">
+      Ready to get started?
+    </h2>
+    <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-8">
+      Build powerful rich text editing experiences with WebEditor
+    </p>
+    <a
+      href="/quickstart"
+      className="inline-flex items-center px-6 py-3 rounded-lg bg-white text-blue-600 font-semibold hover:bg-blue-50 transition-colors"
+    >
+      Get started now
+      <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+      </svg>
+    </a>
+  </div>
+</div>

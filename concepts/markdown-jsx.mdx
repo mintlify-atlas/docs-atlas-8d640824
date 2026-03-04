@@ -1,0 +1,375 @@
+---
+title: Markdown and JSX parsing
+description: Understand how WebEditor parses markdown syntax and handles JSX-like component tags
+---
+
+WebEditor supports markdown syntax for quick formatting and JSX-like tags for inserting components. This guide explains the parsing pipeline and how content is transformed.
+
+## Parsing pipeline
+
+Markdown content flows through several stages before becoming editable content:
+
+<Steps>
+  <Step title="Preprocessing">
+    The `preprocessMarkdownToHTML` function handles frontmatter removal and code block attributes
+  </Step>
+  <Step title="Markdown parsing">
+    marked.js converts markdown syntax to HTML
+  </Step>
+  <Step title="DOM parsing">
+    ProseMirror's DOMParser converts HTML to document nodes based on the schema
+  </Step>
+  <Step title="Component resolution">
+    Custom input rules detect JSX-like tags and create corresponding component nodes
+  </Step>
+</Steps>
+
+## Preprocessing stage
+
+The preprocessing step prepares markdown for parsing:
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/preprocessMarkdown.ts:29-36"
+export function preprocessMarkdownToHTML(markdown: string): string {
+  markdown = markdown.trim();
+
+  // Remove gray matter
+  markdown = markdown.replace(/^---[\s\S]*?---\n?/m, "");
+
+  return marked.parse(markdown, { renderer }) as string;
+}
+```
+
+### Code block handling
+
+Code blocks receive special treatment to preserve language and title attributes:
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/preprocessMarkdown.ts:16-27"
+renderer.code = (code: string, lang?: string) => {
+  if (lang?.includes("#")) {
+    const [language, title] = lang.split("#");
+    return `<pre><code title="${escapeHtml(title)}" language="${escapeHtml(language)}">${code}</code></pre>`;
+  }
+
+  if (lang) {
+    return `<pre><code language="${escapeHtml(lang)}">${code}</code></pre>`;
+  }
+
+  return `<pre><code>${code}</code></pre>`;
+};
+```
+
+<Info>
+You can specify a code block title using the `language#title` syntax:
+````
+```javascript#Example.js
+console.log('Hello world');
+```
+````
+</Info>
+
+## Markdown syntax support
+
+WebEditor recognizes standard markdown patterns through input rules:
+
+### Text formatting
+
+<Tabs>
+  <Tab title="Bold">
+    ```markdown
+    **bold text**
+    ```
+    Triggers the `addStrongRule` to apply the `strong` mark
+  </Tab>
+  <Tab title="Italic">
+    ```markdown
+    _italic text_
+    ```
+    Triggers the `addEmRule` to apply the `em` mark
+  </Tab>
+  <Tab title="Strikethrough">
+    ```markdown
+    ~~strikethrough text~~
+    ```
+    Triggers the `addStrikethroughRule` to apply the `strikethrough` mark
+  </Tab>
+  <Tab title="Inline code">
+    ```markdown
+    `inline code`
+    ```
+    Applies the `code` mark automatically
+  </Tab>
+</Tabs>
+
+### Block elements
+
+<CardGroup cols={2}>
+  <Card title="Headings" icon="heading">
+    ```markdown
+    # Heading 1
+    ## Heading 2
+    ### Heading 3
+    ```
+  </Card>
+  <Card title="Lists" icon="list">
+    ```markdown
+    - Bullet item
+    * Also works
+    
+    1. Numbered item
+    2. Second item
+    ```
+  </Card>
+  <Card title="Blockquotes" icon="quote">
+    ```markdown
+    > This is a quote
+    > Continues here
+    ```
+  </Card>
+  <Card title="Code blocks" icon="code">
+    ````markdown
+    ```javascript
+    const x = 42;
+    ```
+    ````
+  </Card>
+</CardGroup>
+
+### Input rules implementation
+
+Input rules detect patterns as you type and transform them into appropriate nodes or marks:
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/markdown/input.tsx:37-51"
+export const addStrongRule = new InputRule(/\*\*([^*]+)\*\*/, (state, match, start, end) => {
+  const tr = state.tr;
+
+  if (match) {
+    const textContent = match[1];
+
+    // Replace the entire match with just the text content
+    tr.replaceWith(start, end, state.schema.text(textContent, [state.schema.marks.strong.create()]));
+
+    // Don't continue with the mark
+    tr.removeStoredMark(schema.marks.strong);
+  }
+
+  return tr;
+});
+```
+
+## JSX-like component syntax
+
+WebEditor supports JSX-like tags for inserting rich components. These are detected by input rules and transformed into component nodes.
+
+### Basic component syntax
+
+Components use XML-like tags with attributes:
+
+```jsx
+<card title="My Card" icon="FileText" horizontal>
+  Content goes here
+</card>
+```
+
+### Self-closing tags
+
+Some components can be self-closing:
+
+```jsx
+<break height="2" />
+<icon name="Star" size="24" />
+<badge text="New" variant="primary" />
+```
+
+### Attribute parsing
+
+Component attributes are extracted using regex patterns:
+
+```tsx title="Example from card component"
+const addCardRule = new InputRule(/^<card(?:\s+([^>]+))?(?:\s*\/>|\s*>)/, (state, match, start, end) => {
+  const { tr, schema } = state;
+
+  // Default attributes
+  const attrs = {
+    title: "Card Title",
+    icon: null,
+    showIcon: true,
+    horizontal: false,
+    href: null,
+  };
+
+  // Parse attributes if they exist
+  if (match[1]) {
+    const attrString = match[1];
+
+    // Parse title="..." attribute
+    const titleMatch = attrString.match(/title="([^"]*)"/); 
+    if (titleMatch) attrs.title = titleMatch[1];
+
+    // Parse boolean attributes
+    attrs.horizontal = /horizontal(?:=true|\s|$)/.test(attrString);
+  }
+
+  const card = schema.nodes.card.create(attrs, schema.nodes.paragraph.create());
+  tr.replaceRangeWith(start, end, card);
+  
+  return tr;
+});
+```
+
+### Available component tags
+
+WebEditor includes input rules for these component tags:
+
+<Accordion title="Content components">
+  - `<card>` - Card with title and icon
+  - `<callout>` - Info/warning/error callouts
+  - `<tabs>` - Tabbed interface
+  - `<accordion>` - Collapsible section
+  - `<frame>` - Content frame with caption
+</Accordion>
+
+<Accordion title="Layout components">
+  - `<columns>` - Multi-column layout
+  - `<break>` - Spacing between content
+</Accordion>
+
+<Accordion title="Code components">
+  - `<code_snippet>` - Syntax-highlighted code
+  - `<mermaid>` - Mermaid diagram
+</Accordion>
+
+<Accordion title="Inline components">
+  - `<badge>` - Inline badge
+  - `<icon>` - Lucide icon
+  - `<field>` - Parameter field
+</Accordion>
+
+## Document conversion
+
+WebEditor provides utilities to convert between formats:
+
+### Markdown to ProseMirror
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/index.tsx:64-67"
+function mdxLikeToProseMirror(markdown: string) {
+  const html = preprocessMarkdownToHTML(markdown);
+  return htmlToProseMirror(html);
+}
+```
+
+### HTML to ProseMirror
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/index.tsx:53-62"
+function htmlToProseMirror(html: string) {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+
+  // Use ProseMirror's DOMParser to convert back
+  const parser = DOMParser.fromSchema(schema);
+  const fragment = parser.parseSlice(tempDiv).content;
+
+  return fragment;
+}
+```
+
+### ProseMirror to HTML
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/index.tsx:43-51"
+function proseMirrorToHTML(doc: Node) {
+  const serializer = DOMSerializer.fromSchema(schema);
+  const domNode = serializer.serializeFragment(doc.content);
+
+  const container = document.createElement("div");
+  container.appendChild(domNode);
+
+  return container.innerHTML;
+}
+```
+
+## Paste handling
+
+WebEditor includes custom paste handling to preserve formatting:
+
+```tsx title="Custom paste plugin"
+function customPastePlugin() {
+  return new Plugin({
+    props: {
+      handlePaste(view, event) {
+        if (event.clipboardData) {
+          // Prefer HTML if available
+          const html = event.clipboardData.getData("text/html");
+          if (html) {
+            const fragment = htmlToProseMirror(html);
+            if (fragment) {
+              const topNode = view.state.schema.topNodeType.create(null, fragment);
+              view.dispatch(view.state.tr.replaceSelectionWith(topNode));
+              return true;
+            }
+          }
+
+          // Fallback to plain text
+          const text = event.clipboardData.getData("text/plain");
+          if (text) {
+            const fragment = mdxLikeToProseMirror(text);
+            if (fragment) {
+              const topNode = view.state.schema.topNodeType.create(null, fragment);
+              view.dispatch(view.state.tr.replaceSelectionWith(topNode));
+              return true;
+            }
+          }
+        }
+        return false;
+      },
+    },
+  });
+}
+```
+
+<Note>
+When pasting content, WebEditor first attempts to preserve rich HTML formatting, then falls back to parsing as markdown if only plain text is available.
+</Note>
+
+## Input rule registration
+
+All input rules are registered in the input plugin:
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/markdown/input.tsx:115-142"
+export function inputPlugin() {
+  return inputRules({
+    rules: [
+      addHeadersRule,
+      addUnorderedListRule,
+      addOrderedListRule,
+      addQuoteRule,
+      addStrongRule,
+      addEmRule,
+      addStrikethroughRule,
+      addCardRule,
+      addTabsRule,
+      addCalloutRule,
+      addBadgeRule,
+      addCodeSnippetRule(schema),
+      addBreakRule(schema),
+      addStepRule,
+      addAccordionRule,
+      addColumnsRule,
+      addFooRule(schema),
+      addIconRule,
+      addMermaidRule,
+      addFieldRule,
+      addFrameRule,
+    ],
+  });
+}
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Components" href="/concepts/components" icon="blocks">
+    Explore the component system and how to insert components
+  </Card>
+  <Card title="Marks" href="/concepts/marks" icon="highlighter">
+    Learn about text formatting and inline marks
+  </Card>
+</CardGroup>

@@ -1,0 +1,276 @@
+---
+title: Columns
+description: Multi-column layout component with responsive grid support
+---
+
+The Columns component provides a flexible multi-column layout system with responsive breakpoints and adjustable gap spacing.
+
+## Node specification
+
+The columns component consists of two node types: a container (`columns`) and individual column elements (`column`).
+
+### Columns container
+
+<ParamField path="cols" type="number" default="2">
+  Number of columns in the layout. Supports 1-4 columns with responsive breakpoints.
+</ParamField>
+
+<ParamField path="gap" type="string" default="'md'">
+  Spacing between columns. Available: `sm`, `md`, `lg`
+</ParamField>
+
+### Column element
+
+Each column is a container that holds block content. The column node is defining and isolating, meaning it creates a boundary for content.
+
+## Usage
+
+### Insert via command menu
+
+Type `/columns` in the editor and select the Columns option from the command menu. A 2-column layout will be inserted by default.
+
+### Insert via input rule
+
+Type `<columns` followed by optional attributes:
+
+<CodeGroup>
+```html Basic 2 columns
+<columns />
+```
+
+```html 3 columns
+<columns cols="3" />
+```
+
+```html Custom gap
+<columns cols="2" gap="lg" />
+```
+</CodeGroup>
+
+### Programmatic insertion
+
+Use the `insertColumns` function to insert columns programmatically:
+
+```typescript
+import { insertColumns } from "@/editor/components/columns";
+
+const transaction = insertColumns(editorState);
+view.dispatch(transaction);
+```
+
+## Attributes
+
+The columns node spec defines the following attributes:
+
+```typescript
+// Columns container
+attrs: {
+  cols: { default: 2 },
+  gap: { default: "md" },
+}
+
+// Column element (no attributes)
+```
+
+## Responsive behavior
+
+The columns component uses responsive Tailwind classes:
+
+```typescript
+const colClasses = {
+  1: "grid-cols-1",
+  2: "grid-cols-1 md:grid-cols-2",
+  3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+  4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+};
+```
+
+This ensures columns stack on mobile and expand on larger screens:
+
+- **1 column**: Always single column
+- **2 columns**: Single on mobile, 2 on medium screens and up
+- **3 columns**: Single on mobile, 2 on medium, 3 on large screens and up
+- **4 columns**: Single on mobile, 2 on medium, 3 on large, 4 on extra-large screens
+
+## Gap spacing
+
+Three gap sizes are available:
+
+<ParamField path="sm" type="gap">
+  Small gap: `gap-4` (1rem / 16px)
+</ParamField>
+
+<ParamField path="md" type="gap">
+  Medium gap: `gap-6` (1.5rem / 24px)
+</ParamField>
+
+<ParamField path="lg" type="gap">
+  Large gap: `gap-8` (2rem / 32px)
+</ParamField>
+
+## Editing
+
+In edit mode, hover over the columns container to reveal controls in the top-right corner:
+
+- **Minus button**: Decrease column count (minimum 1)
+- **Column counter**: Shows current number of columns
+- **Plus button**: Increase column count (maximum 4)
+
+The columns display visual guides showing the column boundaries:
+
+```typescript
+{editable && (
+  <div className="absolute inset-0 pointer-events-none">
+    {Array.from({ length: cols }, (_, i) => (
+      <div
+        key={i}
+        className="absolute border border-dashed border-border/30 rounded"
+        style={{
+          left: `${(100 / cols) * i}%`,
+          width: `${100 / cols}%`,
+          top: 0,
+          height: "100%",
+        }}
+      />
+    ))}
+  </div>
+)}
+```
+
+### Column management
+
+The `updateColumns` function handles adding/removing columns:
+
+```typescript
+const updateColumns = useEditorEventCallback((view, newCols: number) => {
+  // Collect existing column content
+  const existingColumns = [];
+  for (let i = 0; i < node.childCount; i++) {
+    existingColumns.push(node.child(i));
+  }
+
+  // Create new column structure
+  const newColumns = [];
+  for (let i = 0; i < newCols; i++) {
+    if (i < existingColumns.length) {
+      // Use existing column
+      newColumns.push(existingColumns[i]);
+    } else {
+      // Create new empty column
+      newColumns.push(schema.nodes.column.create({}, schema.nodes.paragraph.create()));
+    }
+  }
+
+  // Replace with new columns node
+  const newColumnsNode = schema.nodes.columns.create({ ...node.attrs, cols: newCols }, newColumns);
+  tr = tr.replaceWith(pos, pos + node.nodeSize, newColumnsNode);
+});
+```
+
+<Note>
+  When reducing column count, excess columns and their content are removed. When increasing count, new empty columns with a single paragraph are added.
+</Note>
+
+## DOM structure
+
+The columns render with the following structure:
+
+```html
+<columns cols="2" gap="md">
+  <column>
+    <!-- block content -->
+  </column>
+  <column>
+    <!-- block content -->
+  </column>
+</columns>
+```
+
+## Node specifications
+
+### Columns container spec
+
+```typescript
+export const columnsNodeSpec: NodeSpec = {
+  group: "block",
+  content: "column+",
+  attrs: {
+    cols: { default: 2 },
+    gap: { default: "md" },
+  },
+  selectable: true,
+};
+```
+
+### Column spec
+
+```typescript
+export const columnNodeSpec: NodeSpec = {
+  content: "block+",
+  defining: true,
+  isolating: true,
+};
+```
+
+## Examples
+
+### Two-column feature comparison
+
+```html
+<columns cols="2" gap="lg">
+  <column>
+    <h3>Free Plan</h3>
+    <p>Perfect for getting started</p>
+    <ul>
+      <li>5 projects</li>
+      <li>Basic support</li>
+    </ul>
+  </column>
+  <column>
+    <h3>Pro Plan</h3>
+    <p>For professional use</p>
+    <ul>
+      <li>Unlimited projects</li>
+      <li>Priority support</li>
+    </ul>
+  </column>
+</columns>
+```
+
+### Three-column card grid
+
+```html
+<columns cols="3" gap="md">
+  <column>
+    <card title="Installation" icon="Download">
+      Get started quickly...
+    </card>
+  </column>
+  <column>
+    <card title="Configuration" icon="Settings">
+      Configure your setup...
+    </card>
+  </column>
+  <column>
+    <card title="Deployment" icon="Rocket">
+      Deploy to production...
+    </card>
+  </column>
+</columns>
+```
+
+### Single column for emphasis
+
+```html
+<columns cols="1" gap="md">
+  <column>
+    <callout type="important">
+      This content spans the full width while maintaining consistent spacing with other column layouts.
+    </callout>
+  </column>
+</columns>
+```
+
+<Tip>
+  Use columns to create responsive layouts without writing custom CSS. The built-in breakpoints ensure your content looks great on all screen sizes.
+</Tip>

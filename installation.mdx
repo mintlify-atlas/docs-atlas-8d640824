@@ -1,0 +1,146 @@
+---
+title: Installation
+description: Install WebEditor in your React project with npm, yarn, or pnpm
+---
+
+## Prerequisites
+
+Before installing WebEditor, ensure your project meets these requirements:
+
+- **React**: Version 18.0.0 or higher
+- **React DOM**: Version 18.0.0 or higher
+- **Tailwind CSS**: Version 4.0.0 or higher
+
+<Warning>
+  WebEditor requires Tailwind CSS 4.0.0 or higher. Make sure your project is using a compatible version before proceeding.
+</Warning>
+
+## Install the package
+
+Install WebEditor using your preferred package manager:
+
+<CodeGroup>
+
+```bash npm
+npm install @devscribe-team/webeditor
+```
+
+```bash yarn
+yarn add @devscribe-team/webeditor
+```
+
+```bash pnpm
+pnpm add @devscribe-team/webeditor
+```
+
+</CodeGroup>
+
+## Peer dependencies
+
+WebEditor has the following peer dependencies that must be installed in your project:
+
+```json package.json
+{
+  "dependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "tailwindcss": ">=4.0.0"
+  }
+}
+```
+
+If you don't already have these installed, add them to your project:
+
+<CodeGroup>
+
+```bash npm
+npm install react react-dom tailwindcss
+```
+
+```bash yarn
+yarn add react react-dom tailwindcss
+```
+
+```bash pnpm
+pnpm add react react-dom tailwindcss
+```
+
+</CodeGroup>
+
+## Configure Tailwind CSS
+
+WebEditor uses Tailwind CSS for styling. Ensure your Tailwind configuration is set up correctly:
+
+<Steps>
+
+<Step title="Create or update tailwind.config.js">
+  
+  If you don't have a Tailwind configuration file, create one:
+  
+  ```bash
+  npx tailwindcss init
+  ```
+  
+  Update your `tailwind.config.js` to include the WebEditor package:
+  
+  ```js tailwind.config.js
+  /** @type {import('tailwindcss').Config} */
+  export default {
+    content: [
+      "./index.html",
+      "./src/**/*.{js,ts,jsx,tsx}",
+      "./node_modules/@devscribe-team/webeditor/**/*.{js,ts,jsx,tsx}"
+    ],
+    theme: {
+      extend: {},
+    },
+    plugins: [],
+  }
+  ```
+
+</Step>
+
+<Step title="Import Tailwind directives">
+  
+  Ensure your main CSS file includes Tailwind's directives:
+  
+  ```css styles.css
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+  ```
+
+</Step>
+
+<Step title="Import WebEditor styles">
+  
+  In your main application file or component, import the WebEditor styles:
+  
+  ```tsx App.tsx
+  import "@devscribe-team/webeditor/styles";
+  ```
+  
+  <Note>
+    The WebEditor styles must be imported after your Tailwind CSS imports to ensure proper styling.
+  </Note>
+
+</Step>
+
+</Steps>
+
+## Verify installation
+
+To verify that WebEditor is installed correctly, try importing it in your code:
+
+```tsx
+import { WebEditor } from "@devscribe-team/webeditor";
+import "@devscribe-team/webeditor/styles";
+
+console.log(WebEditor); // Should output the component
+```
+
+If the import succeeds without errors, WebEditor is installed correctly.
+
+<Tip>
+  Next, head over to the [Quickstart](/quickstart) guide to create your first WebEditor instance.
+</Tip>

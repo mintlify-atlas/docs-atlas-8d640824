@@ -1,0 +1,182 @@
+---
+title: Callout
+description: Highlighted block component for notes, warnings, and important information
+---
+
+The Callout component creates visually distinct blocks to highlight important information, warnings, tips, or notes within your content.
+
+## Node specification
+
+The callout is a block-level node that can contain other block content.
+
+<ParamField path="type" type="string" default="'info'">
+  The callout type that determines icon and color scheme. Available options: `info`, `warning`, `caution`, `important`, `tip`
+</ParamField>
+
+## Usage
+
+### Insert via command menu
+
+Type `/callout` in the editor and select the Callout option from the command menu. The callout will be inserted as an info type by default.
+
+### Insert via input rule
+
+Type `<callout` followed by optional type attribute:
+
+<CodeGroup>
+```html Basic info
+<callout />
+```
+
+```html Warning
+<callout type="warning" />
+```
+
+```html Tip
+<callout type="tip" />
+```
+</CodeGroup>
+
+### Legacy syntax
+
+The callout also supports legacy tag names that map to specific types:
+
+```html
+<info />
+<important />
+<warning />
+<caution />
+<tip />
+```
+
+### Programmatic insertion
+
+Use the `insertCallout` function to insert a callout programmatically:
+
+```typescript
+import { insertCallout } from "@/editor/components/callout";
+
+const transaction = insertCallout(editorState);
+view.dispatch(transaction);
+```
+
+## Attributes
+
+The callout node spec defines a single attribute:
+
+```typescript
+attrs: {
+  type: { default: "info" },
+}
+```
+
+## Callout types
+
+Each type has distinct styling and iconography:
+
+<ParamField path="info" type="type">
+  Blue color scheme with Info icon. Used for general notes and information.
+  - Icon: `Info` from Lucide
+  - Colors: `text-blue-600`, `bg-blue-500/10`, `border-blue-500/20`
+  - Header: "Note"
+</ParamField>
+
+<ParamField path="warning" type="type">
+  Yellow color scheme with Triangle Alert icon. Used for warnings and cautions that need attention.
+  - Icon: `TriangleAlert` from Lucide
+  - Colors: `text-yellow-600`, `bg-yellow-500/10`, `border-yellow-500/20`
+  - Header: "Warning"
+</ParamField>
+
+<ParamField path="caution" type="type">
+  Red color scheme with Octagon Alert icon. Used for critical warnings and dangerous actions.
+  - Icon: `OctagonAlert` from Lucide
+  - Colors: `text-red-600`, `bg-red-500/10`, `border-red-500/20`
+  - Header: "Caution"
+</ParamField>
+
+<ParamField path="important" type="type">
+  Violet color scheme with Message Square Warning icon. Used for important information.
+  - Icon: `MessageSquareWarning` from Lucide
+  - Colors: `text-violet-600`, `bg-violet-500/10`, `border-violet-500/20`
+  - Header: "Important"
+</ParamField>
+
+<ParamField path="tip" type="type">
+  Green color scheme with Lightbulb icon. Used for helpful tips and best practices.
+  - Icon: `Lightbulb` from Lucide
+  - Colors: `text-green-600`, `bg-green-500/10`, `border-green-500/20`
+  - Header: "Tip"
+</ParamField>
+
+## Editing
+
+In edit mode, click the callout icon to open the type selection modal where you can change between the five available types.
+
+<Note>
+  The callout type can be changed at any time without losing the content inside.
+</Note>
+
+## Type information
+
+The callout uses a type information object to determine styling:
+
+```typescript
+const typeInformation = {
+  info: {
+    icon: Info,
+    headerText: "Note",
+    iconColor: "text-blue-600",
+    backgroundColor: "bg-blue-500/10",
+    borderColor: "border-blue-500/20",
+  },
+  warning: {
+    icon: TriangleAlert,
+    headerText: "Warning",
+    iconColor: "text-yellow-600",
+    backgroundColor: "bg-yellow-500/10",
+    borderColor: "border-yellow-500/20",
+  },
+  // ... other types
+};
+```
+
+## DOM structure
+
+The callout renders with the following structure:
+
+```html
+<callout type="info">
+  <!-- block content -->
+</callout>
+```
+
+## Examples
+
+### Information note
+
+```html
+<callout type="info">
+This is an informational note to help users understand an important concept.
+</callout>
+```
+
+### Warning message
+
+```html
+<callout type="warning">
+Be careful when running this command as it may affect your system settings.
+</callout>
+```
+
+### Pro tip
+
+```html
+<callout type="tip">
+Use keyboard shortcuts to speed up your workflow. Press Cmd+K to open the command menu.
+</callout>
+```
+
+<Tip>
+  Choose the callout type that matches the semantic meaning of your content. This helps users quickly understand the importance and nature of the information.
+</Tip>

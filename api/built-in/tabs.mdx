@@ -1,0 +1,309 @@
+---
+title: Tabs
+description: Organize content into multiple switchable tabs
+---
+
+The Tabs component creates a tabbed interface for organizing related content into separate, switchable panels.
+
+## Overview
+
+Tabs are ideal for:
+- Showing code examples in multiple languages
+- Platform-specific instructions (iOS, Android, Web)
+- Alternative approaches or methods
+- Configuration options for different environments
+- API request/response examples
+
+Each tab maintains its own content, which is preserved when switching between tabs.
+
+## Insertion
+
+Insert a Tabs component using the command menu:
+
+1. Type `/` to open the command menu
+2. Search for "tabs"
+3. Select the Tabs option
+
+You can also type the input rule directly:
+```
+<tabs />
+```
+
+## Attributes
+
+<ParamField path="tabNames" type="string[]" default={["Tab 1"]}>
+  Array of tab names displayed in the tab bar. Each name appears as a clickable tab button.
+</ParamField>
+
+<ParamField path="activeTab" type="number" default={0}>
+  Index of the currently active tab (0-based). The active tab's content is displayed.
+</ParamField>
+
+<ParamField path="tabContents" type="Record<number, unknown>" default={{}}>
+  Internal storage for each tab's content. Content is preserved when switching tabs.
+</ParamField>
+
+## Node specification
+
+```typescript
+export const tabsNodeSpec: NodeSpec = {
+  group: "block",
+  content: "block+",
+  attrs: {
+    tabNames: { default: ["Tab 1"] },
+    activeTab: { default: 0 },
+    tabContents: { default: {} as Record<number, unknown> },
+  },
+  defining: true,
+  selectable: true,
+};
+```
+
+## Usage examples
+
+### Multi-language code examples
+
+```html
+<tabs>
+  {/* JavaScript tab */}
+  const editor = new Editor({
+    element: '#editor'
+  });
+</tabs>
+```
+
+Then edit tab names to "JavaScript", "TypeScript", "Python" and add content to each tab.
+
+### Platform-specific instructions
+
+Create tabs for different platforms:
+
+```html
+<tabs>
+  {/* Content for first tab */}
+  Install on macOS:
+  brew install webeditor
+</tabs>
+```
+
+Then:
+1. Rename first tab to "macOS"
+2. Click the + button to add "Windows" and "Linux" tabs
+3. Add platform-specific content to each
+
+### API endpoint variations
+
+```html
+<tabs>
+  {/* Tab 1: REST API */}
+  curl -X POST https://api.example.com/v1/users \
+    -H "Content-Type: application/json" \
+    -d '{"name": "John Doe"}'
+  
+  {/* Tab 2: GraphQL (add via + button) */}
+  mutation CreateUser {
+    createUser(input: {name: "John Doe"}) {
+      id
+      name
+    }
+  }
+</tabs>
+```
+
+### Request and response examples
+
+```html
+<tabs>
+  {/* Tab 1: Request */}
+  {
+    "username": "john",
+    "email": "john@example.com"
+  }
+  
+  {/* Tab 2: Response (add via + button) */}
+  {
+    "id": "usr_123",
+    "username": "john",
+    "email": "john@example.com",
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+</tabs>
+```
+
+## Working with tabs in the editor
+
+### Add a new tab
+
+Click the **+** button on the right side of the tab bar to add a new tab. The new tab:
+- Gets a default name like "Tab 2", "Tab 3", etc.
+- Starts with empty content (a blank paragraph)
+- Automatically becomes the active tab
+
+### Rename a tab
+
+1. Click the tab name to open the edit modal
+2. Enter the new name
+3. Click "Save" or press Enter
+
+You can also double-click a tab name to edit it.
+
+### Switch between tabs
+
+Click any tab name to switch to that tab. Your content in each tab is automatically saved when you switch.
+
+### Delete a tab
+
+Click the **X** button next to the tab name to delete it. 
+
+<Note>
+You cannot delete the last remaining tab. Tabs must always have at least one tab.
+</Note>
+
+When you delete a tab:
+- If deleting the active tab, the previous tab becomes active
+- If deleting tab 0, tab 1 becomes the new active tab
+- All remaining tabs are renumbered
+
+## TypeScript types
+
+```typescript
+interface TabsAttrs {
+  tabNames: string[];                  // Array of tab names
+  activeTab: number;                   // Index of active tab (0-based)
+  tabContents: Record<number, unknown>; // Stored content for each tab
+}
+
+// Tab operations
+function switchTab(newIdx: number): void;
+function updateTabName(tabIndex: number, newName: string): void;
+function addNewTab(): void;
+function deleteTab(tabIndex: number): void;
+```
+
+## Content persistence
+
+The Tabs component intelligently manages content:
+
+1. **Automatic saving**: When you switch tabs, current content is saved
+2. **Content restoration**: Switching back to a tab restores its exact content
+3. **Per-tab storage**: Each tab maintains independent content
+4. **New tab defaults**: New tabs start with an empty paragraph
+
+## Styling details
+
+Tab bar:
+- Border along the bottom
+- Rounded top corners
+- Hover effects on tab buttons
+
+Active tab:
+- Highlighted with secondary background
+- Foreground text color
+- More prominent appearance
+
+Inactive tabs:
+- Muted text color
+- Hover effect reveals secondary background
+- Smooth transition animations
+
+Content area:
+- Padding around content
+- Card background color
+- Supports all markdown elements
+
+## Best practices
+
+1. **Use descriptive tab names**: Make it clear what each tab contains
+2. **Keep tab count reasonable**: 2-5 tabs is ideal; more becomes hard to navigate
+3. **Maintain consistency**: Similar structure across tabs helps users understand differences
+4. **Order logically**: Put most common or recommended option first
+5. **Use for related content**: Tabs should show variations of the same concept
+
+<Tip>
+For code examples, use tab names that match the language or framework: "JavaScript", "Python", "cURL", etc.
+</Tip>
+
+## Common patterns
+
+### Code examples by language
+
+Tabs: `JavaScript` | `Python` | `Ruby` | `PHP`
+
+Each tab shows the same functionality in different languages.
+
+### Installation methods
+
+Tabs: `npm` | `yarn` | `pnpm` | `bun`
+
+Each tab shows installation command for different package managers.
+
+### Framework variations
+
+Tabs: `React` | `Vue` | `Angular` | `Svelte`
+
+Each tab shows component implementation in different frameworks.
+
+### Environment configuration
+
+Tabs: `Development` | `Staging` | `Production`
+
+Each tab shows environment-specific configuration.
+
+### Platform guides
+
+Tabs: `Web` | `iOS` | `Android`
+
+Each tab provides platform-specific instructions.
+
+## Import from code blocks
+
+The Tabs component can automatically import multiple `<pre><code>` blocks:
+
+```html
+<tabs>
+  <pre><code language="javascript" title="JavaScript">
+    // JavaScript code
+  </code></pre>
+  <pre><code language="python" title="Python">
+    # Python code
+  </code></pre>
+</tabs>
+```
+
+This automatically creates:
+- Two tabs named "JavaScript" and "Python"
+- Content converted to code snippets
+- Proper syntax highlighting
+
+## Keyboard navigation
+
+- **Tab**: Move between tab buttons and content
+- **Enter/Space**: Activate focused tab button
+- **Edit modal open**:
+  - **Enter**: Save and close
+  - **Escape**: Cancel and close
+
+## Accessibility features
+
+The Tabs component includes:
+- Semantic HTML structure
+- ARIA labels for tab controls
+- Keyboard navigation support
+- Focus indicators on active elements
+- Clear visual distinction between active and inactive tabs
+- Sufficient color contrast
+
+<Note>
+Tabs use the card background and border colors from your theme, automatically adapting to light and dark modes.
+</Note>
+
+## Content support
+
+Each tab can contain:
+- Paragraphs and headings
+- Lists (ordered and unordered)
+- Code blocks and code snippets
+- Images
+- Tables
+- Other components (Fields, Frames, Steps, etc.)
+- Nested markdown content

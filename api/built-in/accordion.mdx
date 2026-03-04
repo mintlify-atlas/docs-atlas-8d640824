@@ -1,0 +1,132 @@
+---
+title: Accordion
+description: Collapsible content container with customizable title, description, and icon
+---
+
+The Accordion component provides an expandable/collapsible content container perfect for FAQs, detailed sections, or any content that should be hidden by default.
+
+## Node specification
+
+The accordion is a block-level node that can contain other block content.
+
+<ParamField path="title" type="string" default="''">
+  The heading text displayed in the accordion header
+</ParamField>
+
+<ParamField path="description" type="string" default="''">
+  Optional descriptive text shown below the title when expanded
+</ParamField>
+
+<ParamField path="icon" type="string | null" default="null">
+  Lucide icon name to display in the header (e.g., "FileText", "Star")
+</ParamField>
+
+<ParamField path="showIcon" type="boolean" default="true">
+  Whether to display the icon in the header
+</ParamField>
+
+<ParamField path="defaultOpen" type="boolean" default="false">
+  Whether the accordion should be expanded by default
+</ParamField>
+
+## Usage
+
+### Insert via command menu
+
+Type `/accordion` in the editor and select the Accordion option from the command menu. The accordion will be inserted with a default title that you can edit.
+
+### Insert via input rule
+
+Type `<accordion` followed by optional attributes:
+
+<CodeGroup>
+```html Basic
+<accordion />
+```
+
+```html With title
+<accordion title="Frequently Asked Questions" />
+```
+
+```html With all attributes
+<accordion title="Advanced Settings" description="Configure advanced options" icon="Settings" defaultOpen />
+```
+</CodeGroup>
+
+### Programmatic insertion
+
+Use the `insertAccordion` function to insert an accordion programmatically:
+
+```typescript
+import { insertAccordion } from "@/editor/components/accordion";
+
+const transaction = insertAccordion(editorState);
+view.dispatch(transaction);
+```
+
+## Attributes
+
+The accordion node spec defines the following attributes:
+
+```typescript
+attrs: {
+  title: { default: "" },
+  description: { default: "" },
+  icon: { default: null },
+  showIcon: { default: true },
+  defaultOpen: { default: false },
+}
+```
+
+## Editing
+
+In edit mode, you can:
+
+- **Edit title**: Click the title text to open the title edit modal
+- **Edit description**: Click the description text to open the description edit modal
+- The accordion automatically manages open/close state via the chevron button
+
+<Note>
+  The accordion uses the `resolveIcon` utility to dynamically load Lucide icons. Icon names should match Lucide's PascalCase convention (e.g., "ChevronDown", "FileText").
+</Note>
+
+## DOM structure
+
+The accordion renders with the following structure:
+
+```html
+<accordion 
+  title="Accordion Title"
+  description="Optional description"
+  icon="FileText"
+  show-icon="true"
+  default-open="false">
+  <!-- block content -->
+</accordion>
+```
+
+## Examples
+
+### Basic FAQ accordion
+
+```html
+<accordion title="What is WebEditor?">
+  WebEditor is a powerful WYSIWYG editor built on ProseMirror...
+</accordion>
+```
+
+### Accordion with icon and description
+
+```html
+<accordion 
+  title="Installation Guide" 
+  description="Step-by-step instructions" 
+  icon="Download" 
+  defaultOpen>
+  1. Install dependencies...
+</accordion>
+```
+
+<Tip>
+  Use accordions to organize long-form content and improve page readability by hiding details until needed.
+</Tip>

@@ -1,0 +1,402 @@
+---
+title: "Components overview"
+description: "Explore the built-in components available in WebEditor for rich content creation"
+---
+
+## Introduction
+
+WebEditor comes with a comprehensive set of built-in components that can be inserted directly into your content. These components are accessible via the command menu (press `/` in an empty paragraph) and provide rich, interactive content elements.
+
+## Architecture
+
+WebEditor's component system is built on top of ProseMirror's node system. Each component is:
+
+1. **A ProseMirror Node**: Defined with a `NodeSpec` that specifies its structure, attributes, and parsing rules
+2. **A React NodeView**: Rendered as a React component with full access to React hooks and state
+3. **Insertable via Commands**: Accessible through the command menu with keyboard shortcuts
+4. **Serializable**: Can be converted to/from HTML for persistence
+
+### Component lifecycle
+
+```typescript
+// 1. Node specification defines the schema
+export const cardNodeSpec: NodeSpec = {
+  group: "block",
+  content: "block*",
+  attrs: {
+    title: { default: "Card Title" },
+    icon: { default: null },
+    showIcon: { default: true },
+    horizontal: { default: false },
+    href: { default: null },
+  },
+  // ... parsing and serialization rules
+};
+
+// 2. React component renders the node
+export const CardNodeView = React.forwardRef<HTMLDivElement, NodeViewComponentProps>(
+  ({ nodeProps, ...props }, ref) => {
+    // Component implementation
+  }
+);
+
+// 3. Insert function for programmatic insertion
+export function insertCard(state: EditorState): Transaction {
+  // Creates and inserts the card node
+}
+```
+
+## Available components
+
+### Block components
+
+Block components occupy their own line and can contain other content.
+
+<CodeGroup>
+  ```tsx Card
+  <card title="Card Title" icon="FileText" show-icon="true">
+    <p>Card content goes here</p>
+  </card>
+  ```
+
+  ```tsx Callout
+  <callout type="info">
+    <p>Important information</p>
+  </callout>
+  ```
+
+  ```tsx Accordion
+  <accordion title="Expandable Section">
+    <p>Hidden content revealed on click</p>
+  </accordion>
+  ```
+
+  ```tsx Tabs
+  <tabs>
+    <tab title="Tab 1">
+      <p>First tab content</p>
+    </tab>
+    <tab title="Tab 2">
+      <p>Second tab content</p>
+    </tab>
+  </tabs>
+  ```
+
+  ```tsx Code Snippet
+  <code_snippet 
+    language="typescript" 
+    showLineNumbers="true"
+    theme="github-dark"
+  >
+    console.log('Hello, world!');
+  </code_snippet>
+  ```
+
+  ```tsx Columns
+  <columns>
+    <column>
+      <p>Left column content</p>
+    </column>
+    <column>
+      <p>Right column content</p>
+    </column>
+  </columns>
+  ```
+
+  ```tsx Field
+  <field label="Field Label" type="text">
+    <p>Field description or content</p>
+  </field>
+  ```
+
+  ```tsx Frame
+  <frame src="https://example.com" title="Embedded Content" />
+  ```
+
+  ```tsx Mermaid
+  <mermaid>
+    graph TD
+      A[Start] --> B[Process]
+      B --> C[End]
+  </mermaid>
+  ```
+
+  ```tsx Steps
+  <step number="1" title="First Step">
+    <p>Step instructions</p>
+  </step>
+  <step number="2" title="Second Step">
+    <p>More instructions</p>
+  </step>
+  ```
+</CodeGroup>
+
+### Inline components
+
+Inline components can be inserted within text paragraphs.
+
+<CodeGroup>
+  ```tsx Badge
+  <badge variant="default" label="New Feature" />
+  ```
+
+  ```tsx Icon
+  <icon name="Star" size="20" />
+  ```
+
+  ```tsx Break
+  <break />
+  ```
+</CodeGroup>
+
+## Component categories
+
+### Content containers
+
+Components that hold and organize other content:
+
+- **Card**: Display content in a styled card with optional icon and title
+- **Callout**: Highlight important information with contextual styling (info, warning, caution, tip, important)
+- **Accordion**: Create collapsible sections for better content organization
+- **Tabs**: Organize content into switchable tabs
+- **Field**: Display form-like fields with labels and descriptions
+- **Columns**: Create multi-column layouts
+
+### Code and diagrams
+
+Components for technical content:
+
+- **Code Snippet**: Syntax-highlighted code blocks with language support (JavaScript, TypeScript, Python, Rust, SQL, CSS, HTML)
+- **Mermaid**: Render flowcharts, diagrams, and graphs using Mermaid syntax
+
+### Media and embeds
+
+Components for external content:
+
+- **Frame**: Embed external content via iframe with configurable dimensions
+
+### Visual elements
+
+Components for visual enhancement:
+
+- **Badge**: Inline status indicators or labels with variant styles (default, secondary, destructive, outline)
+- **Icon**: Display Lucide icons inline with customizable size
+- **Break**: Visual separator or spacer
+- **Steps**: Numbered step-by-step instructions
+
+## Component attributes
+
+Each component supports different attributes that can be configured:
+
+### Card attributes
+
+<ParamField path="title" type="string" default="Card Title">
+  The card's heading text
+</ParamField>
+
+<ParamField path="icon" type="string" default="null">
+  Lucide icon name (e.g., "FileText", "Star", "Book")
+</ParamField>
+
+<ParamField path="show-icon" type="boolean" default="true">
+  Whether to display the icon
+</ParamField>
+
+<ParamField path="horizontal" type="boolean" default="false">
+  Layout orientation: horizontal or vertical
+</ParamField>
+
+<ParamField path="href" type="string" default="null">
+  Optional link URL to make the card clickable
+</ParamField>
+
+### Callout attributes
+
+<ParamField path="type" type="string" default="info">
+  Callout style: `info`, `warning`, `caution`, `tip`, or `important`
+</ParamField>
+
+### Code snippet attributes
+
+<ParamField path="language" type="string" default="javascript">
+  Programming language for syntax highlighting
+</ParamField>
+
+<ParamField path="showLineNumbers" type="boolean" default="false">
+  Whether to display line numbers
+</ParamField>
+
+<ParamField path="theme" type="string" default="github">
+  Code editor theme (github, github-dark, tokyo-night, vscode)
+</ParamField>
+
+### Badge attributes
+
+<ParamField path="variant" type="string" default="default">
+  Badge style: `default`, `secondary`, `destructive`, or `outline`
+</ParamField>
+
+<ParamField path="label" type="string" default="">
+  Badge text content
+</ParamField>
+
+## Using components
+
+### Via command menu
+
+The easiest way to insert components is through the command menu:
+
+1. Place cursor in an empty paragraph
+2. Press `/` to open the command menu
+3. Type to search for a component
+4. Select with arrow keys and press Enter
+5. Configure component attributes in the modal (if applicable)
+
+### Via markdown syntax
+
+You can also type component syntax directly:
+
+```html
+<card title="My Card">
+  Content here
+</card>
+```
+
+The editor will automatically parse and render the component.
+
+### Programmatically
+
+For advanced use cases, you can insert components programmatically using the insert functions:
+
+```typescript
+import { insertCard, insertCallout } from '@devscribe-team/webeditor';
+
+// In a ProseMirror command
+function myCommand(state: EditorState, dispatch?: (tr: Transaction) => void) {
+  const tr = insertCard(state);
+  if (dispatch) dispatch(tr);
+  return true;
+}
+```
+
+## Editing components
+
+When `editable={true}`, components can be edited by:
+
+- **Clicking**: Click on component titles, icons, or attributes to open edit modals
+- **Keyboard**: Use Tab to focus components, Enter/Space to edit
+- **Hover options**: Some components show additional options on hover (e.g., Card layout toggle)
+
+### Edit modals
+
+Many components open modal dialogs for editing:
+
+- **Title/Description modals**: Edit text content
+- **Icon modals**: Search and select Lucide icons
+- **Type modals**: Change component variants (e.g., Callout type)
+- **Code modals**: Edit code with syntax highlighting
+
+## Component styling
+
+All components use Tailwind CSS for styling and support both light and dark themes automatically.
+
+### Theme-aware components
+
+Components automatically adapt to the active theme:
+
+```tsx
+// Light mode: light backgrounds, dark text
+// Dark mode: dark backgrounds, light text
+```
+
+### Customization
+
+You can customize component appearance by:
+
+1. **CSS variables**: Override Tailwind theme variables
+2. **Tailwind config**: Extend the default theme
+3. **Custom styles**: Add additional CSS classes
+
+## Creating custom components
+
+To create your own components:
+
+1. Define a `NodeSpec` with the component schema
+2. Create a React `NodeView` component
+3. Add parsing rules for HTML/markdown
+4. Register the component in the editor schema
+5. Add an insert function and command
+
+```typescript
+// 1. Define node spec
+export const myComponentSpec: NodeSpec = {
+  group: "block",
+  content: "block+",
+  attrs: {
+    title: { default: "Default Title" },
+  },
+  parseDOM: [{
+    tag: "my-component",
+    getAttrs: (dom) => ({
+      title: dom.getAttribute("title") || "Default Title",
+    }),
+  }],
+  toDOM: (node) => [
+    "my-component",
+    { title: node.attrs.title },
+    0,
+  ],
+};
+
+// 2. Create React NodeView
+export const MyComponentNodeView = React.forwardRef<
+  HTMLDivElement,
+  NodeViewComponentProps
+>(({ nodeProps, ...props }, ref) => {
+  const title = nodeProps.node.attrs.title;
+  
+  return (
+    <div ref={ref} {...props}>
+      <h3>{title}</h3>
+      <div>{/* Content */}</div>
+    </div>
+  );
+});
+
+// 3. Create insert function
+export function insertMyComponent(state: EditorState): Transaction {
+  const node = state.schema.nodes.my_component.create(
+    { title: "Default Title" },
+    state.schema.nodes.paragraph.create()
+  );
+  
+  let tr = state.tr.replaceSelectionWith(node);
+  return tr;
+}
+```
+
+## Best practices
+
+<Note>
+  **Component design guidelines**
+  
+  - Keep components focused on a single purpose
+  - Provide sensible default attributes
+  - Make components editable with clear UI affordances
+  - Support both light and dark themes
+  - Use semantic HTML for accessibility
+  - Test with keyboard navigation
+</Note>
+
+### Performance tips
+
+1. **Lazy load icons**: The dynamic icon loader caches loaded icons
+2. **Memoize render**: Use React.memo for expensive components
+3. **Avoid re-renders**: Use `contentEditable={false}` for non-editable parts
+4. **Optimize modals**: Only render modals when open
+
+## See also
+
+- [WebEditor](/api/webeditor) - Main editor component documentation
+- [useTheme Hook](/api/hooks/use-theme) - Theme management
+- [Quickstart](/quickstart) - Get started with WebEditor

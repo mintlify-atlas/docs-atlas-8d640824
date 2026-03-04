@@ -1,0 +1,236 @@
+---
+title: useTheme
+description: React hook for managing theme state with support for light, dark, and auto modes
+---
+
+## Overview
+
+The `useTheme` hook provides comprehensive theme management for your WebEditor application. It handles theme persistence, system preference detection, and automatic theme application to the document root.
+
+## Import
+
+```tsx
+import { useTheme } from '@webeditor/core';
+```
+
+## Usage
+
+### Basic usage
+
+```tsx
+import { useTheme } from '@webeditor/core';
+
+function ThemeToggle() {
+  const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
+
+  return (
+    <div>
+      <p>Current theme: {theme}</p>
+      <p>Resolved theme: {resolvedTheme}</p>
+      <button onClick={toggleTheme}>Toggle theme</button>
+    </div>
+  );
+}
+```
+
+### Setting a specific theme
+
+```tsx
+function ThemeSelector() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div>
+      <button onClick={() => setTheme('light')}>Light</button>
+      <button onClick={() => setTheme('dark')}>Dark</button>
+      <button onClick={() => setTheme('auto')}>Auto</button>
+      <p>Current: {theme}</p>
+    </div>
+  );
+}
+```
+
+### Cycling through themes
+
+```tsx
+function ThemeCycler() {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <button onClick={toggleTheme}>
+      {theme === 'auto' ? '🌓' : theme === 'light' ? '☀️' : '🌙'} {theme}
+    </button>
+  );
+}
+```
+
+### Using resolved theme for conditional rendering
+
+```tsx
+function ThemedComponent() {
+  const { resolvedTheme } = useTheme();
+
+  return (
+    <div>
+      {resolvedTheme === 'dark' ? (
+        <DarkLogo />
+      ) : (
+        <LightLogo />
+      )}
+    </div>
+  );
+}
+```
+
+## Return value
+
+The hook returns an object with the following properties:
+
+<ResponseField name="theme" type="Theme" required>
+  The current theme setting. Can be `'light'`, `'dark'`, or `'auto'`.
+  
+  When set to `'auto'`, the theme follows the system preference using `prefers-color-scheme` media query.
+</ResponseField>
+
+<ResponseField name="resolvedTheme" type="'light' | 'dark'" required>
+  The actual theme being applied to the UI. This is always either `'light'` or `'dark'`, never `'auto'`.
+  
+  When `theme` is `'auto'`, `resolvedTheme` reflects the system's color scheme preference.
+</ResponseField>
+
+<ResponseField name="setTheme" type="(theme: Theme) => void" required>
+  Function to update the theme. Accepts `'light'`, `'dark'`, or `'auto'` as the argument.
+  
+  The selected theme is automatically persisted to `localStorage` under the key `'webeditor-theme'`.
+</ResponseField>
+
+<ResponseField name="toggleTheme" type="() => void" required>
+  Function to cycle through themes in the order: `auto` → `light` → `dark` → `auto`.
+  
+  This provides a convenient way to implement a theme toggle button.
+</ResponseField>
+
+## Type definitions
+
+```typescript
+export type Theme = 'light' | 'dark' | 'auto';
+
+export function useTheme(): {
+  theme: Theme;
+  resolvedTheme: 'light' | 'dark';
+  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
+}
+```
+
+## Behavior
+
+### Initialization
+
+On initial load, the hook determines the theme in the following order:
+
+1. **localStorage**: Checks for a previously saved theme in `localStorage` under the key `'webeditor-theme'`
+2. **Default**: Falls back to `'auto'` mode if no saved preference exists
+
+### Theme persistence
+
+When you call `setTheme()`, the new theme is automatically saved to `localStorage`, ensuring the user's preference persists across sessions.
+
+### System preference detection
+
+When `theme` is set to `'auto'`, the hook:
+
+- Detects the system's color scheme preference using the `prefers-color-scheme` media query
+- Automatically updates `resolvedTheme` when the system preference changes
+- Listens for system theme changes in real-time
+
+### DOM updates
+
+The hook automatically applies the resolved theme to the document root by:
+
+- Adding a class name (`'light'` or `'dark'`) to `document.documentElement`
+- Removing the previous theme class when the theme changes
+- Updating the class whenever `resolvedTheme` changes
+
+<Note>
+  The hook applies theme classes to `document.documentElement` (the `<html>` tag), allowing you to style your entire application based on the theme using CSS selectors like `.dark` and `.light`.
+</Note>
+
+### Server-side rendering
+
+The hook is safe to use in SSR environments:
+
+- Returns `'auto'` as the default theme when `window` is undefined
+- Returns `'light'` as the default resolved theme on the server
+- Skips DOM manipulation and localStorage access when running on the server
+
+## Example integration
+
+Here's a complete example showing how the `useTheme` hook is used within the WebEditor component:
+
+```tsx
+import { useTheme } from '@webeditor/core';
+
+function WebEditor() {
+  // Initialize theme detection and management
+  const { theme, resolvedTheme } = useTheme();
+
+  return (
+    <div className="editor-container">
+      {/* Your editor UI */}
+      <p>Current theme mode: {theme}</p>
+      <p>Applied theme: {resolvedTheme}</p>
+    </div>
+  );
+}
+```
+
+<Info>
+  The WebEditor component automatically uses this hook internally, so themes are applied automatically when you use the editor. You typically only need to use this hook directly when building custom theme controls.
+</Info>
+
+## Best practices
+
+### Use resolvedTheme for UI decisions
+
+When you need to know which theme is actually being displayed, use `resolvedTheme` instead of `theme`:
+
+```tsx
+// ❌ Don't do this
+const isDark = theme === 'dark';
+
+// ✅ Do this
+const isDark = resolvedTheme === 'dark';
+```
+
+### Provide theme controls
+
+Give users control over their theme preference:
+
+```tsx
+function Settings() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="auto">Auto (System)</option>
+    </select>
+  );
+}
+```
+
+### Respect system preferences
+
+Consider defaulting to `'auto'` mode to respect user system preferences:
+
+```tsx
+// The hook already defaults to 'auto', but you can explicitly set it
+const { setTheme } = useTheme();
+
+// Reset to auto mode
+<button onClick={() => setTheme('auto')}>
+  Use System Theme
+</button>
+```

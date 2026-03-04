@@ -1,0 +1,298 @@
+---
+title: Steps
+description: Create numbered step-by-step instructions with visual indicators
+---
+
+The Steps component creates numbered, sequential instructions with visual step indicators and connecting lines.
+
+## Overview
+
+Steps are perfect for:
+- Tutorial and onboarding flows
+- Installation instructions
+- Multi-step processes
+- Configuration guides
+- Recipes and procedures
+
+Each step displays a circular number indicator with a connecting line to the next step.
+
+## Insertion
+
+Insert a Step using the command menu:
+
+1. Type `/` to open the command menu
+2. Search for "step"
+3. Select the Step option
+
+You can also type the input rule directly:
+```
+<step title="Install dependencies" />
+```
+
+<Note>
+Steps are automatically numbered sequentially. When you insert a new step, it receives the next available number.
+</Note>
+
+## Attributes
+
+<ParamField path="title" type="string" default="">
+  Optional title displayed above the step content in large, bold text. Click the title to edit it.
+</ParamField>
+
+<ParamField path="stepNumber" type="number" default={1}>
+  The step number displayed in the circular indicator. Auto-increments when adding new steps. Click the number to edit it manually.
+</ParamField>
+
+## Node specification
+
+```typescript
+export const stepNodeSpec: NodeSpec = {
+  group: "block",
+  content: "block+",
+  attrs: {
+    title: { default: "" },
+    stepNumber: { default: 1 },
+  },
+  selectable: true,
+};
+```
+
+## Usage examples
+
+### Basic installation steps
+
+```html
+<step title="Install the package">
+Run the following command in your terminal:
+
+npm install webeditor
+
+</step>
+
+<step title="Import the editor">
+Add the import to your JavaScript file:
+
+import { Editor } from 'webeditor';
+
+</step>
+```
+
+<step title="Initialize">
+Create a new editor instance:
+
+```javascript
+const editor = new Editor({
+  element: document.getElementById('editor')
+});
+```
+</step>
+```
+
+### Configuration steps without titles
+
+```mdx
+<step>
+Navigate to your project settings in the dashboard.
+</step>
+
+<step>
+Click on the "API Keys" tab in the sidebar.
+</step>
+
+<step>
+Click "Generate New Key" and copy the key to a secure location.
+</step>
+```
+
+### Steps with complex content
+
+```mdx
+<step title="Configure authentication">
+Create a new authentication provider:
+
+1. Choose your authentication method
+2. Enter your credentials
+3. Test the connection
+
+<frame padding="sm">
+**Important:** Keep your credentials secure and never commit them to version control.
+</frame>
+</step>
+
+<step title="Set up permissions">
+Define user roles and permissions:
+
+<field name="role" type="string" required>
+The user role (e.g., "admin", "editor", "viewer")
+</field>
+
+<field name="permissions" type="array" required>
+Array of permission strings for this role
+</field>
+</step>
+```
+
+## Visual structure
+
+Each step has three components:
+
+1. **Number indicator**: Circular badge with the step number
+2. **Connecting line**: Vertical line connecting to the next step
+3. **Content area**: Optional title and markdown content
+
+```
+┌─────┐
+│  1  │  ← Step number indicator
+└──┬──┘
+   │     ← Connecting line
+   │
+ Content goes here
+   │
+┌──┴──┐
+│  2  │
+└─────┘
+```
+
+## Editing in the editor
+
+### Edit step title
+
+Click the step title to open the edit modal. You can:
+- Update the title text
+- Remove the title by clearing the text
+
+### Edit step number
+
+Click the numbered circle to manually change the step number. This is useful when:
+- Reorganizing steps
+- Creating sub-sections with custom numbering
+- Skipping numbers intentionally
+
+### Create new steps
+
+<Tip>
+Press `Enter` at the end of a step's content to automatically create the next step with an incremented number.
+</Tip>
+
+When you press Enter on an empty paragraph at the end of a step:
+- A new step is automatically inserted
+- The step number increments by 1
+- Any steps after are renumbered accordingly
+- Your cursor moves to the new step
+
+## TypeScript types
+
+```typescript
+interface StepAttrs {
+  title: string;        // Optional step title
+  stepNumber: number;   // Step number displayed in indicator
+}
+
+// Helper to find next step number
+function findNextStepNumber(state: EditorState): number {
+  let maxStepNumber = 0;
+  state.doc.descendants((node: Node) => {
+    if (node.type.name === "step") {
+      const stepNum = node.attrs.stepNumber || 1;
+      if (stepNum > maxStepNumber) {
+        maxStepNumber = stepNum;
+      }
+    }
+  });
+  return maxStepNumber + 1;
+}
+```
+
+## Automatic numbering
+
+The Steps component intelligently handles numbering:
+
+- **Auto-increment**: New steps automatically get the next number in sequence
+- **Re-numbering**: When you insert a step between existing steps, subsequent steps renumber
+- **Manual override**: You can manually set any step number by clicking it
+- **Gap tolerance**: You can intentionally skip numbers if needed
+
+## Styling details
+
+Step indicators:
+- 2rem (32px) circular badges
+- Secondary background color
+- Bold, centered text
+- Hover effect when editable
+
+Connecting lines:
+- 1px width
+- Border color from theme
+- Minimum 3rem height
+- Extends full height of step content
+
+## Best practices
+
+1. **Use titles for complex steps**: Add titles when steps need clear section headers
+2. **Keep steps focused**: Each step should represent one clear action or concept
+3. **Include code examples**: Show exact commands or code for technical steps
+4. **Use consistent tone**: Start each step with an action verb (Install, Configure, Run, etc.)
+5. **Test the flow**: Follow your own steps to ensure they're clear and complete
+
+<Note>
+Steps work great with other components like Code Snippets, Fields, and Frames to create comprehensive tutorials.
+</Note>
+
+## Common patterns
+
+### Quick start guide
+```mdx
+<step title="Prerequisites">
+Before you begin, ensure you have:
+- Node.js 18+ installed
+- A text editor
+- Basic JavaScript knowledge
+</step>
+
+<step title="Installation">
+[Installation instructions]
+</step>
+
+<step title="Your first project">
+[Project setup]
+</step>
+```
+
+### API integration tutorial
+```mdx
+<step title="Get API credentials">
+[How to get credentials]
+</step>
+
+<step title="Make your first request">
+[Example request]
+</step>
+
+<step title="Handle the response">
+[Response handling]
+</step>
+```
+
+### Troubleshooting guide
+```mdx
+<step title="Identify the error">
+[Error identification]
+</step>
+
+<step title="Check common causes">
+[Common issues list]
+</step>
+
+<step title="Apply the fix">
+[Solution steps]
+</step>
+```
+
+## Accessibility
+
+The Steps component includes:
+- Semantic HTML structure
+- ARIA labels on interactive elements
+- Keyboard navigation support (Tab to move between editable elements)
+- Focus indicators for step numbers and titles
+- Sufficient color contrast for step indicators

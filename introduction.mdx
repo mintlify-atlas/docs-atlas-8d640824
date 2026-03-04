@@ -1,0 +1,78 @@
+---
+title: Introduction
+description: Learn about WebEditor, a completely dynamic JSX-based rich text editor powered by ProseMirror
+---
+
+WebEditor is a completely dynamic, JSX-based rich text editor powered by [ProseMirror](https://prosemirror.net/). It's the alternative to BlockNote and TipTap you've been waiting for.
+
+## What is WebEditor?
+
+WebEditor combines the power of ProseMirror's document editing capabilities with the flexibility of React and JSX. It allows you to write Markdown and JSX seamlessly, add custom nestable components, and create rich interactive documentation experiences.
+
+Built by the team at [Devscribe](https://www.devscribeai.com/) and open-sourced for the community, WebEditor provides a modern approach to rich text editing that feels native to React developers.
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Markdown and JSX support" icon="markdown">
+    Write Markdown and JSX seamlessly in the same editor without switching contexts
+  </Card>
+  <Card title="Custom nestable components" icon="puzzle-piece">
+    Add custom components that can be nested within each other for complex layouts
+  </Card>
+  <Card title="Commands menu" icon="terminal">
+    Add components with an intuitive commands (/) menu that appears as you type
+  </Card>
+  <Card title="Marks menu" icon="pen-to-square">
+    Apply marks to text with a marks (/) menu for formatting and annotations
+  </Card>
+  <Card title="Automatic theme detection" icon="palette">
+    Built-in light/dark mode support with automatic theme detection from browser preferences
+  </Card>
+  <Card title="ProseMirror powered" icon="bolt">
+    Built on ProseMirror for robust document editing with a proven foundation
+  </Card>
+</CardGroup>
+
+## Comparison to alternatives
+
+### WebEditor vs BlockNote
+
+While BlockNote provides a block-based editor with a focus on Notion-like experiences, WebEditor takes a more flexible approach:
+
+- **JSX-first**: WebEditor treats JSX as a first-class citizen, making it natural for React developers
+- **Custom components**: Easily add and nest custom React components without fighting the framework
+- **ProseMirror direct**: Direct access to ProseMirror's powerful APIs for advanced use cases
+
+### WebEditor vs TipTap
+
+TipTap is a headless editor framework, while WebEditor provides more out of the box:
+
+- **Batteries included**: WebEditor comes with a complete theming system and component library
+- **Markdown support**: Native Markdown parsing and rendering without additional plugins
+- **Theme management**: Built-in theme detection and management with localStorage persistence
+
+<Note>
+  WebEditor is built on top of ProseMirror using the `@handlewithcare/react-prosemirror` package, which provides excellent React integration.
+</Note>
+
+## Use cases
+
+WebEditor is perfect for:
+
+- **Documentation platforms**: Build interactive documentation with custom components
+- **Content management systems**: Create rich content editing experiences
+- **Note-taking applications**: Combine Markdown and custom components for powerful note-taking
+- **Collaborative editing**: Leverage ProseMirror's collaborative editing capabilities
+- **Technical writing**: Write technical content with code snippets, diagrams, and interactive elements
+
+## Package information
+
+- **Package name**: `@devscribe-team/webeditor`
+- **Current version**: 0.1.1
+- **License**: MIT
+- **Repository**: Open source and available on npm
+
+<Tip>
+  Ready to get started? Continue to the [Installation](/installation) guide to add WebEditor to your project.
+</Tip>

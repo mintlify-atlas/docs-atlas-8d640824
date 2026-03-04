@@ -1,0 +1,447 @@
+---
+title: Component system
+description: Learn about WebEditor's component system, command menu, and built-in components
+---
+
+WebEditor provides a rich set of components that extend basic markdown with interactive, styled elements. Components are inserted via the command menu or by typing JSX-like tags.
+
+## Command menu
+
+The command menu is triggered by pressing `/` on an empty line:
+
+<Steps>
+  <Step title="Trigger the menu">
+    Press `/` at the beginning of an empty paragraph
+  </Step>
+  <Step title="Search components">
+    Type to filter available components by name or description
+  </Step>
+  <Step title="Select and insert">
+    Use arrow keys to navigate and Enter to insert the selected component
+  </Step>
+</Steps>
+
+### Command menu implementation
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/index.tsx:254-312"
+"/": (state, _dispatch, view) => {
+  if (!view) return false;
+
+  const { $head, empty } = state.selection;
+
+  // Check if CodeMirror is currently focused (inside a code snippet)
+  const activeElement = document.activeElement;
+  if (activeElement) {
+    const cmEditor = activeElement.closest(".cm-editor");
+    const cmContent = activeElement.closest(".cm-content");
+    if (cmEditor || cmContent) {
+      // CodeMirror is focused, don't trigger command menu
+      return false;
+    }
+  }
+
+  // Only trigger if selection is empty and we're in a paragraph
+  if (empty && $head.parent.type.name === "paragraph") {
+    const parentStart = $head.start($head.depth);
+    const isAtStart = $head.pos === parentStart;
+    const isEmptyParagraph = $head.parent.content.size === 0;
+
+    if (isEmptyParagraph || isAtStart) {
+      const coords = view.coordsAtPos($head.pos);
+      const { top, left } = clampDialogPosition(coords.bottom + 5, coords.left);
+
+      setDialogPosition({ top, left });
+      setCurrentMenuType("commands");
+      openDialog();
+      return true;
+    }
+  }
+
+  return false;
+}
+```
+
+<Note>
+The command menu won't open if you're inside a code snippet editor to avoid interfering with typing code.
+</Note>
+
+### Command types
+
+Commands come in three types:
+
+<Tabs>
+  <Tab title="Simple commands">
+    Commands that insert text patterns:
+    ```tsx
+    { 
+      id: "h1", 
+      name: "Heading 1", 
+      icon: Heading1, 
+      description: "Big section heading", 
+      write: "# " 
+    }
+    ```
+  </Tab>
+  <Tab title="Component commands">
+    Commands that insert component nodes:
+    ```tsx
+    {
+      id: "code",
+      name: "Code",
+      icon: Code,
+      description: "Capture a code snippet",
+      componentName: "code_snippet",
+    }
+    ```
+  </Tab>
+  <Tab title="Attribute commands">
+    Commands that prompt for attributes before inserting:
+    ```tsx
+    {
+      id: "card",
+      name: "Card",
+      icon: CreditCard,
+      description: "Create a horizontal or vertical card",
+      componentName: "card",
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Built-in components
+
+WebEditor includes a comprehensive set of components for different use cases:
+
+### Content components
+
+<CardGroup cols={2}>
+  <Card title="Card" icon="credit-card">
+    Displays content with a title, optional icon, and horizontal or vertical layout
+    ```jsx
+    <card title="My Card" icon="FileText" horizontal>
+      Content here
+    </card>
+    ```
+  </Card>
+  <Card title="Callout" icon="alert-circle">
+    Highlights important information with different variants (info, warning, error, success)
+    ```jsx
+    <callout variant="info" title="Note">
+      Important information
+    </callout>
+    ```
+  </Card>
+  <Card title="Accordion" icon="list-collapse">
+    Creates collapsible sections for FAQs or detailed content
+    ```jsx
+    <accordion title="Click to expand">
+      Hidden content
+    </accordion>
+    ```
+  </Card>
+  <Card title="Frame" icon="frame">
+    Wraps content with padding and an optional caption
+    ```jsx
+    <frame caption="Figure 1">
+      Content with border
+    </frame>
+    ```
+  </Card>
+</CardGroup>
+
+### Layout components
+
+<Accordion title="Tabs">
+  Create tabbed interfaces for organizing related content:
+  ```jsx
+  <tabs>
+    <tab title="Tab 1">Content 1</tab>
+    <tab title="Tab 2">Content 2</tab>
+  </tabs>
+  ```
+</Accordion>
+
+<Accordion title="Columns">
+  Create responsive multi-column layouts:
+  ```jsx
+  <columns cols="2">
+    <column>First column</column>
+    <column>Second column</column>
+  </columns>
+  ```
+</Accordion>
+
+<Accordion title="Break">
+  Add vertical spacing between sections:
+  ```jsx
+  <break height="2" />
+  ```
+</Accordion>
+
+### Code components
+
+<Tabs>
+  <Tab title="Code snippet">
+    Syntax-highlighted code blocks with language support and titles:
+    ```jsx
+    <code_snippet language="javascript" title="example.js">
+      const x = 42;
+    </code_snippet>
+    ```
+    
+    Or use markdown code fences:
+    ````
+    ```javascript#example.js
+    const x = 42;
+    ```
+    ````
+  </Tab>
+  <Tab title="Mermaid">
+    Render Mermaid diagrams for flowcharts, sequence diagrams, and more:
+    ```jsx
+    <mermaid>
+      graph TD
+        A[Start] --> B[End]
+    </mermaid>
+    ```
+  </Tab>
+</Tabs>
+
+### Documentation components
+
+<CardGroup cols={2}>
+  <Card title="Step" icon="arrow-up-from-dot">
+    Document step-by-step processes:
+    ```jsx
+    <step title="Step 1">
+      Instructions here
+    </step>
+    ```
+  </Card>
+  <Card title="Field" icon="file-text">
+    Document API parameters with name, type, and description:
+    ```jsx
+    <field name="userId" type="string" required>
+      The user's unique identifier
+    </field>
+    ```
+  </Card>
+</CardGroup>
+
+### Inline components
+
+<Accordion title="Badge">
+  Inline badges for labels and status indicators:
+  ```jsx
+  <badge text="New" variant="primary" />
+  ```
+</Accordion>
+
+<Accordion title="Icon">
+  Insert Lucide icons inline:
+  ```jsx
+  <icon name="Star" size="24" />
+  ```
+</Accordion>
+
+## Component node views
+
+Each component is rendered using a React node view that handles both editing and display:
+
+```tsx title="Example: Card component structure"
+export const CardNodeView = React.forwardRef<HTMLDivElement, NodeViewComponentProps>(
+  function Card({ nodeProps, ...props }, ref) {
+    const title = nodeProps.node.attrs.title || "Card Title";
+    const icon = nodeProps.node.attrs.icon;
+    const showIcon = nodeProps.node.attrs.showIcon ?? true;
+    const horizontal = nodeProps.node.attrs.horizontal ?? false;
+
+    // Render logic with editable controls
+    return (
+      <div className={cardClasses}>
+        {/* Card content with clickable title/icon for editing */}
+      </div>
+    );
+  }
+);
+```
+
+### Node specifications
+
+Each component defines a node spec that describes its structure:
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/components/card.tsx:218-254"
+export const cardNodeSpec: NodeSpec = {
+  group: "block",
+  content: "block*",
+  attrs: {
+    title: { default: "Card Title" },
+    icon: { default: null },
+    showIcon: { default: true },
+    horizontal: { default: false },
+    href: { default: null },
+  },
+  selectable: true,
+
+  parseDOM: [
+    {
+      tag: "card",
+      getAttrs: (dom) => ({
+        title: dom.getAttribute("title") || "Card Title",
+        icon: dom.getAttribute("icon") || null,
+        showIcon: dom.getAttribute("show-icon") !== "false",
+        horizontal: dom.getAttribute("horizontal") === "true",
+        href: dom.getAttribute("href") || null,
+      }),
+    },
+  ],
+
+  toDOM: (node) => [
+    "card",
+    {
+      title: node.attrs.title,
+      icon: node.attrs.icon,
+      "show-icon": node.attrs.showIcon.toString(),
+      horizontal: node.attrs.horizontal.toString(),
+      href: node.attrs.href,
+    },
+    0,
+  ],
+};
+```
+
+## Insert functions
+
+Each component has an insert function that creates the node programmatically:
+
+```tsx title="Example: Card insert function"
+export function insertCard(state: EditorState): Transaction {
+  const { from, to } = state.selection;
+
+  const attrs = {
+    title: "Card Title",
+    icon: null,
+    showIcon: true,
+    horizontal: false,
+    href: null,
+  };
+
+  const card = state.schema.nodes.card.create(
+    attrs, 
+    state.schema.nodes.paragraph.create()
+  );
+
+  let tr = state.tr;
+  if (from !== to) {
+    tr = tr.delete(from, to);
+  }
+  tr = tr.replaceSelectionWith(card);
+
+  // Position cursor inside the card content
+  const insertPos = tr.selection.from;
+  const innerPos = insertPos + 1;
+  tr = tr.setSelection(Selection.near(tr.doc.resolve(innerPos)));
+
+  return tr;
+}
+```
+
+## Icon system
+
+Many components support icons from Lucide React:
+
+```tsx title="Dynamic icon loading"
+async function loadIcon(iconName: string): Promise<React.ComponentType<any> | null> {
+  const normalizedName = normalizeIconName(iconName);
+
+  // Check cache first
+  if (iconCache.has(normalizedName)) {
+    return iconCache.get(normalizedName)!;
+  }
+
+  try {
+    const mod = await import("lucide-react");
+    const IconComponent = (mod as any)[normalizedName];
+
+    if (IconComponent) {
+      iconCache.set(normalizedName, IconComponent);
+      return IconComponent;
+    }
+  } catch (error) {
+    console.error(`Failed to load icon "${iconName}":`, error);
+    return null;
+  }
+}
+```
+
+<Info>
+Icons are loaded dynamically and cached for performance. Icon names are automatically normalized from kebab-case or snake_case to PascalCase.
+</Info>
+
+## Command menu setup
+
+All available commands are defined in `commandMenuSetup`:
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/utils/command-system.tsx:60-162"
+export const commandMenuSetup: CommandItem[] = [
+  { id: "h1", name: "Heading 1", icon: Heading1, description: "Big section heading", write: "# " },
+  { id: "h2", name: "Heading 2", icon: Heading2, description: "Medium section heading", write: "## " },
+  { id: "h3", name: "Heading 3", icon: Heading3, description: "Small section heading", write: "### " },
+  { id: "paragraph", name: "Text", icon: AlignLeft, description: "Just start writing with plain text", write: "" },
+  { id: "bullet", name: "Bulleted list", icon: List, description: "Create a simple bulleted list", write: "- " },
+  {
+    id: "code",
+    name: "Code",
+    icon: Code,
+    description: "Capture a code snippet",
+    componentName: "code_snippet",
+  },
+  { id: "quote", name: "Quote", icon: Quote, description: "Capture a quote", write: "> " },
+  { separator: true },
+  {
+    id: "card",
+    name: "Card",
+    icon: CreditCard,
+    description: "Create a horizontal or vertical card",
+    componentName: "card",
+  },
+  {
+    id: "callout",
+    name: "Callout",
+    icon: AlertCircle,
+    description: "Add a callout (info, warning, caution, etc.)",
+    componentName: "callout",
+  },
+  // ... more components
+];
+```
+
+## Editable context
+
+Components respect the editor's editable state:
+
+```tsx
+const editable = useEditorEditable();
+
+// Conditionally show edit controls
+{editable && (
+  <button onClick={handleEdit}>
+    Edit
+  </button>
+)}
+```
+
+<Note>
+When `editable={false}` is passed to WebEditor, all components render in read-only mode without edit controls.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Marks system" href="/concepts/marks" icon="highlighter">
+    Learn about text marks and inline formatting
+  </Card>
+  <Card title="API Reference" href="/api/components/overview" icon="code">
+    Explore detailed component API documentation
+  </Card>
+</CardGroup>

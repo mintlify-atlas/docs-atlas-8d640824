@@ -1,0 +1,122 @@
+---
+title: Field
+description: Display API parameter fields with name, type, and requirement status
+---
+
+The Field component creates styled parameter documentation blocks, commonly used in API reference pages to document function parameters, API endpoints, or configuration options.
+
+## Overview
+
+Field components display as bordered cards containing:
+- Parameter name (displayed as code)
+- Type badge with the parameter type
+- Required/optional badge
+- Content area for the parameter description
+
+All attributes can be edited by clicking on them in the editor.
+
+## Insertion
+
+Insert a Field component using the command menu:
+
+1. Type `/` to open the command menu
+2. Search for "field" or "parameter"
+3. Select the Field option
+
+You can also type the input rule directly:
+```
+<field name="userId" type="string" required />
+```
+
+## Attributes
+
+<ParamField path="name" type="string" default="">
+  The parameter name displayed in the field header. Shown in monospace font.
+</ParamField>
+
+<ParamField path="type" type="string" default="string">
+  The data type of the parameter (e.g., `string`, `number`, `boolean`, `object`, `array`).
+</ParamField>
+
+<ParamField path="required" type="boolean" default={false}>
+  Whether the parameter is required. When `true`, displays a red "required" badge. When `false`, displays a muted "optional" badge.
+</ParamField>
+
+## Node specification
+
+```typescript
+export const fieldNodeSpec: NodeSpec = {
+  group: "block",
+  content: "block+",
+  attrs: {
+    name: { default: "" },
+    type: { default: "string" },
+    required: { default: false },
+  },
+  selectable: true,
+};
+```
+
+## Usage examples
+
+### Basic parameter field
+
+```mdx
+<field name="userId" type="string" required>
+The unique identifier for the user. Must be a valid UUID v4 format.
+</field>
+```
+
+### Optional parameter with complex type
+
+```mdx
+<field name="options" type="object">
+Optional configuration object with the following properties:
+- `timeout`: Maximum time in milliseconds
+- `retries`: Number of retry attempts
+</field>
+```
+
+### Array parameter
+
+```mdx
+<field name="tags" type="array" required>
+Array of tag strings to associate with the resource. Each tag must be 1-50 characters.
+</field>
+```
+
+## Editing in the editor
+
+<Tip>
+Click any part of the Field component to open the edit modal where you can update:
+- Parameter name
+- Type
+- Required status (checkbox)
+</Tip>
+
+The content area supports all standard markdown formatting including:
+- Paragraphs and line breaks
+- Inline code and code blocks
+- Lists (ordered and unordered)
+- Bold, italic, and other text formatting
+
+## TypeScript types
+
+```typescript
+interface FieldAttrs {
+  name: string;        // Parameter name
+  type: string;        // Parameter type
+  required: boolean;   // Required status
+}
+```
+
+## Best practices
+
+1. **Use descriptive names**: Parameter names should be clear and match your actual API
+2. **Specify accurate types**: Use precise type names like `string | null` or `Promise<User>`
+3. **Document constraints**: In the description, mention any validation rules, formats, or limits
+4. **Be consistent**: Use the same type naming conventions throughout your documentation
+
+<Note>
+The Field component is designed to work seamlessly with API documentation. For a complete API reference page, combine multiple Field components with headings and descriptions.
+</Note>

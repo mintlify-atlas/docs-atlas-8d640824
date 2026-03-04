@@ -1,0 +1,439 @@
+---
+title: Custom components
+description: Understanding WebEditor's built-in components and their configuration
+---
+
+## Overview
+
+WebEditor comes with a rich set of pre-built components that can be inserted using the command menu (`/`). Each component is implemented as a ProseMirror NodeView with React, providing an interactive editing experience.
+
+## Component architecture
+
+All components follow a consistent pattern:
+
+1. **Node specification** - Defines the component's schema, attributes, and DOM serialization
+2. **React NodeView** - Renders the component with editable attributes
+3. **Input rule** - Allows typing markdown-like syntax (e.g., `<card title="..." />`)
+4. **Insert function** - Programmatically inserts the component via the command menu
+
+## Block components
+
+Block components contain other block content and occupy their own line.
+
+### Card
+
+Display content in a bordered card with an optional icon:
+
+```tsx
+// Node spec attributes
+attrs: {
+  title: { default: "Card Title" },
+  icon: { default: null },
+  showIcon: { default: true },
+  horizontal: { default: false },
+  href: { default: null }
+}
+```
+
+**Example usage:**
+
+```markdown
+<card title="Getting Started" icon="FileText" horizontal="true" />
+```
+
+**Features:**
+- Click the title to edit it
+- Click the icon to change it (searches Lucide icons)
+- Toggle between horizontal and vertical layouts
+- Supports nested content
+
+<Tip>
+Cards with an `href` attribute become clickable links with hover effects.
+</Tip>
+
+### Callout
+
+Highlight important information with styled callouts:
+
+```tsx
+// Node spec attributes
+attrs: {
+  type: { default: "info" } // info | warning | caution | important | tip
+}
+```
+
+**Example usage:**
+
+```markdown
+<callout type="warning">
+This is important information!
+</callout>
+```
+
+**Available types:**
+- `info` - Blue, for general notes
+- `warning` - Yellow, for warnings
+- `caution` - Red, for critical information
+- `important` - Purple, for important notes
+- `tip` - Green, for helpful tips
+
+### Accordion
+
+Create collapsible sections:
+
+```tsx
+// Node spec attributes
+attrs: {
+  title: { default: "Accordion Title" }
+}
+```
+
+**Example usage:**
+
+```markdown
+<accordion title="Click to expand">
+Hidden content goes here.
+</accordion>
+```
+
+### Frame
+
+Add a bordered frame with optional caption:
+
+```tsx
+// Node spec attributes
+attrs: {
+  caption: { default: null }
+}
+```
+
+**Example usage:**
+
+```markdown
+<frame caption="Figure 1: System Architecture">
+Frame content here.
+</frame>
+```
+
+### Field
+
+Document parameters or API fields:
+
+```tsx
+// Node spec attributes
+attrs: {
+  name: { default: "fieldName" },
+  type: { default: "string" },
+  required: { default: false }
+}
+```
+
+**Example usage:**
+
+```markdown
+<field name="userId" type="string" required="true">
+The unique identifier for the user.
+</field>
+```
+
+<Note>
+The Field component is designed for API documentation and parameter descriptions.
+</Note>
+
+### Columns
+
+Create responsive grid layouts:
+
+```tsx
+// Node spec attributes
+attrs: {
+  cols: { default: 2 } // Number of columns
+}
+```
+
+**Example usage:**
+
+```markdown
+<columns cols="3">
+  <column>
+    First column
+  </column>
+  <column>
+    Second column
+  </column>
+  <column>
+    Third column
+  </column>
+</columns>
+```
+
+### Step
+
+Create numbered step-by-step instructions:
+
+```tsx
+// Node spec attributes
+attrs: {
+  title: { default: "Step Title" }
+}
+```
+
+**Example usage:**
+
+```markdown
+<step title="Install dependencies">
+Run `npm install` to install all required packages.
+</step>
+```
+
+### Tabs
+
+Organize content in tabbed interfaces:
+
+```tsx
+// Node spec attributes
+attrs: {
+  tabs: { default: [] } // Array of tab labels
+}
+```
+
+**Example usage:**
+
+```markdown
+<tabs tabs='["JavaScript", "TypeScript", "Python"]'>
+Tab content here.
+</tabs>
+```
+
+### Code Snippet
+
+Embed syntax-highlighted code with CodeMirror:
+
+```tsx
+// Node spec attributes
+attrs: {
+  language: { default: "javascript" },
+  code: { default: "" }
+}
+```
+
+**Example usage:**
+
+```markdown
+<code_snippet language="typescript">
+const hello = "world";
+</code_snippet>
+```
+
+<Tip>
+Code snippets use CodeMirror for syntax highlighting and support many languages.
+</Tip>
+
+### Mermaid
+
+Create diagrams using Mermaid syntax:
+
+```tsx
+// Node spec attributes
+attrs: {
+  code: { default: "graph TD\n  A-->B" }
+}
+```
+
+**Example usage:**
+
+```markdown
+<mermaid>
+graph LR
+  A[Start] --> B[Process]
+  B --> C[End]
+</mermaid>
+```
+
+## Inline components
+
+Inline components are rendered within text content.
+
+### Badge
+
+Add inline badges with different variants:
+
+```tsx
+// Node spec attributes
+attrs: {
+  variant: { default: "default" }, // default | secondary | destructive | outline
+  label: { default: "" }
+}
+```
+
+**Example usage:**
+
+```markdown
+This is <badge variant="destructive" label="deprecated" /> in v2.0.
+```
+
+**Available variants:**
+- `default` - Primary color
+- `secondary` - Secondary color
+- `destructive` - Red/destructive color
+- `outline` - Bordered outline style
+
+### Icon
+
+Insert Lucide icons inline:
+
+```tsx
+// Node spec attributes
+attrs: {
+  icon: { default: "FileText" },
+  size: { default: 20 }
+}
+```
+
+**Example usage:**
+
+```markdown
+Click the <icon icon="Settings" size="16" /> icon to configure.
+```
+
+<Note>
+All icon names reference the [Lucide icon library](https://lucide.dev/icons). Icons are dynamically loaded and support PascalCase, camelCase, kebab-case, and snake_case naming.
+</Note>
+
+### Break
+
+Add vertical spacing between content:
+
+```tsx
+// Node spec attributes
+attrs: {
+  size: { default: "medium" } // small | medium | large
+}
+```
+
+**Example usage:**
+
+```markdown
+Section 1
+
+<break size="large" />
+
+Section 2
+```
+
+## Editing components
+
+When `editable={true}` (default), components provide interactive editing:
+
+<Steps>
+  <Step title="Click to edit">
+    Click on component titles, icons, or content to open edit modals
+  </Step>
+  <Step title="Hover controls">
+    Hover over components to reveal additional controls (e.g., layout toggle on Card)
+  </Step>
+  <Step title="Nested content">
+    Type inside block components to add nested content
+  </Step>
+  <Step title="Delete components">
+    Select a component and press Delete/Backspace to remove it
+  </Step>
+</Steps>
+
+## Component implementation pattern
+
+Here's how a typical component is structured (using Card as an example):
+
+<Accordion title="View Card component implementation">
+```tsx
+// 1. Node specification
+export const cardNodeSpec: NodeSpec = {
+  group: "block",
+  content: "block*",
+  attrs: {
+    title: { default: "Card Title" },
+    icon: { default: null },
+    showIcon: { default: true },
+    horizontal: { default: false },
+    href: { default: null },
+  },
+  selectable: true,
+  parseDOM: [{
+    tag: "card",
+    getAttrs: (dom) => ({
+      title: dom.getAttribute("title") || "Card Title",
+      icon: dom.getAttribute("icon") || null,
+      // ... more attributes
+    }),
+  }],
+  toDOM: (node) => [
+    "card",
+    {
+      title: node.attrs.title,
+      icon: node.attrs.icon,
+      // ... more attributes
+    },
+    0,
+  ],
+};
+
+// 2. React NodeView
+export const CardNodeView = React.forwardRef<HTMLDivElement, NodeViewComponentProps>(
+  function Card({ nodeProps, ...props }, ref) {
+    const title = nodeProps.node.attrs.title;
+    const editable = useEditorEditable();
+
+    const updateTitle = useEditorEventCallback((view, newTitle: string) => {
+      const pos = nodeProps.getPos();
+      const tr = view.state.tr.setNodeMarkup(pos, undefined, {
+        ...nodeProps.node.attrs,
+        title: newTitle,
+      });
+      view.dispatch(tr);
+    });
+
+    return (
+      <div className="card">
+        {editable ? (
+          <span onClick={() => setModalOpen(true)}>{title}</span>
+        ) : (
+          <span>{title}</span>
+        )}
+        <div {...props} ref={ref} />
+      </div>
+    );
+  }
+);
+
+// 3. Insert function
+export function insertCard(state: EditorState): Transaction {
+  const card = state.schema.nodes.card.create(
+    { title: "Card Title" },
+    state.schema.nodes.paragraph.create()
+  );
+  return state.tr.replaceSelectionWith(card);
+}
+```
+</Accordion>
+
+## Adding components via command menu
+
+See the [Command Menu guide](/guides/command-menu) for details on inserting components using the `/` command system.
+
+## Read-only mode
+
+When `editable={false}`, all component edit controls are disabled:
+
+```tsx
+<WebEditor value={content} editable={false} />
+```
+
+In read-only mode:
+- Edit buttons and modals are hidden
+- Click handlers are disabled
+- Components display as static content
+- Interactive elements like links still work
+
+<Warning>
+Components are **not extensible** in the current version. You cannot add custom components without modifying the source code. The available components are defined in `command-system.tsx:60-161`.
+</Warning>

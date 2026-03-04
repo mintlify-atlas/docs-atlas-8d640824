@@ -1,0 +1,169 @@
+---
+title: Icon
+description: Insert inline Lucide icons with customizable size
+---
+
+The Icon component renders inline icons from the Lucide icon library. Icons are displayed inline with text and can be customized for size.
+
+## Overview
+
+Icons are inline elements that can be inserted anywhere in your text flow. They're useful for:
+- Adding visual indicators inline with text
+- Creating icon lists or feature callouts
+- Enhancing button or link text
+- Providing visual context to headings
+
+The editor uses the [Lucide](https://lucide.dev/) icon library, which provides hundreds of consistent, customizable icons.
+
+## Insertion
+
+Insert an Icon using the command menu:
+
+1. Type `/` to open the command menu
+2. Search for "icon"
+3. Select the Icon option
+
+You can also type the input rule directly:
+```
+<icon name="Star" size="24" />
+```
+
+## Attributes
+
+<ParamField path="name" type="string" default="FileText">
+  The name of the Lucide icon to display. Must match a valid icon name from the Lucide library (e.g., `FileText`, `Star`, `Heart`, `CheckCircle`).
+</ParamField>
+
+<ParamField path="size" type="number" default={20}>
+  The size of the icon in pixels. Common sizes: 16 (small), 20 (default), 24 (medium), 32 (large).
+</ParamField>
+
+## Node specification
+
+```typescript
+export const iconNodeSpec: NodeSpec = {
+  group: "inline",
+  inline: true,
+  atom: true,
+  selectable: false,
+  attrs: {
+    name: { default: "FileText" },
+    size: { default: 20 },
+  },
+};
+```
+
+<Note>
+The Icon component is an inline, atomic node. It appears inline with text and cannot contain child content.
+</Note>
+
+## Usage examples
+
+### Inline icon with text
+
+```mdx
+Click the <icon name="Settings" size="16" /> settings icon to configure your preferences.
+```
+
+### Feature list with icons
+
+```mdx
+<icon name="CheckCircle" size="20" /> Fast performance
+
+<icon name="Shield" size="20" /> Enterprise security
+
+<icon name="Zap" size="20" /> Real-time updates
+```
+
+### Heading with icon
+
+```mdx
+## <icon name="Rocket" size="24" /> Getting started
+
+Let's begin your journey with our platform.
+```
+
+### Status indicators
+
+```mdx
+<icon name="CheckCircle" size="18" /> Task completed
+
+<icon name="Clock" size="18" /> Task in progress
+
+<icon name="XCircle" size="18" /> Task failed
+```
+
+## Available icons
+
+The Icon component supports all icons from the Lucide library. Popular icons include:
+
+- **Common**: `FileText`, `File`, `Folder`, `Home`, `Search`, `Menu`
+- **Actions**: `Edit`, `Trash`, `Copy`, `Download`, `Upload`, `Save`
+- **Status**: `CheckCircle`, `XCircle`, `AlertCircle`, `Info`, `HelpCircle`
+- **Arrows**: `ArrowRight`, `ArrowLeft`, `ArrowUp`, `ArrowDown`, `ChevronRight`
+- **Media**: `Play`, `Pause`, `Stop`, `Volume`, `Image`, `Video`
+- **Social**: `Github`, `Twitter`, `Linkedin`, `Mail`, `Phone`
+- **UI**: `Settings`, `User`, `Users`, `Bell`, `Calendar`, `Clock`
+- **Shapes**: `Star`, `Heart`, `Square`, `Circle`, `Triangle`
+
+<Tip>
+Visit [lucide.dev](https://lucide.dev/icons) to browse the complete icon library and find icon names.
+</Tip>
+
+## Editing in the editor
+
+Click any icon to open the edit modal where you can:
+- Change the icon name
+- Adjust the icon size
+- Preview the selected icon
+
+The modal provides helpful placeholders showing common icon names and sizes.
+
+## TypeScript types
+
+```typescript
+interface IconAttrs {
+  name: string;    // Lucide icon name
+  size: number;    // Size in pixels
+}
+
+// Icon is resolved using the resolveInlineIcon function
+function resolveInlineIcon(
+  name: string,
+  options: {
+    size: number;
+    showIcon: boolean;
+    fallbackIcon: string;
+  }
+): JSX.Element;
+```
+
+## Styling
+
+Icons automatically:
+- Use the theme's muted foreground color by default
+- Change to foreground color on hover (when editable)
+- Align vertically with surrounding text
+- Maintain aspect ratio when resized
+
+## Best practices
+
+1. **Use consistent sizing**: Stick to standard sizes (16, 20, 24, 32) for visual consistency
+2. **Match text size**: Icon size should generally match or slightly exceed surrounding text size
+3. **Choose semantic icons**: Use icons that clearly communicate their meaning
+4. **Don't overuse**: Too many icons can make content cluttered and hard to scan
+5. **Test accessibility**: Ensure icons supplement text rather than replace it
+
+<Note>
+Icons are decorative elements. Always include descriptive text alongside icons for accessibility and clarity.
+</Note>
+
+## Common size guidelines
+
+| Context | Recommended Size | Use Case |
+|---------|-----------------|----------|
+| Body text | 16-18px | Inline with paragraph text |
+| Default | 20px | Standard icon size |
+| Headings | 24px | Section or heading icons |
+| Feature cards | 32-48px | Prominent feature highlights |
+| Hero sections | 64px+ | Large decorative icons |

@@ -1,0 +1,166 @@
+---
+title: Frame
+description: Wrap content in a bordered container with optional caption
+---
+
+The Frame component creates a bordered container around content with customizable padding and an optional caption below the frame.
+
+## Overview
+
+Frames provide visual separation and emphasis for content sections. They're particularly useful for:
+- Highlighting important information or warnings
+- Grouping related content together
+- Creating visual breaks in documentation
+- Adding context with captions
+
+## Insertion
+
+Insert a Frame component using the command menu:
+
+1. Type `/` to open the command menu
+2. Search for "frame"
+3. Select the Frame option
+
+You can also type the input rule directly:
+```
+<frame caption="Figure 1: Example diagram" padding="lg" />
+```
+
+## Attributes
+
+<ParamField path="caption" type="string" default="">
+  Optional caption text displayed below the frame in italic, muted text. Click the caption to edit it.
+</ParamField>
+
+<ParamField path="padding" type="string" default="md">
+  Controls the internal padding of the frame. Available options:
+  - `sm`: Small padding (0.5rem / 8px)
+  - `md`: Medium padding (1rem / 16px)
+  - `lg`: Large padding (1.5rem / 24px)
+  - `xl`: Extra large padding (2rem / 32px)
+</ParamField>
+
+## Node specification
+
+```typescript
+export const frameNodeSpec: NodeSpec = {
+  group: "block",
+  content: "block+",
+  attrs: {
+    caption: { default: "" },
+    padding: { default: "md" },
+  },
+  selectable: true,
+};
+```
+
+## Usage examples
+
+### Basic frame with caption
+
+```mdx
+<frame caption="Important configuration example">
+
+This is critical information that needs to be highlighted.
+
+Make sure to review these settings carefully before deploying.
+
+</frame>
+```
+
+### Frame with custom padding
+
+```mdx
+<frame padding="lg">
+
+## Large Padded Section
+
+This frame has extra large padding for better visual separation.
+
+It can contain:
+- Multiple paragraphs
+- Lists and other elements
+- Code blocks
+- Images
+
+</frame>
+```
+
+### Compact frame for inline notes
+
+```mdx
+<frame padding="sm">
+**Quick note:** This setting only applies to production environments.
+</frame>
+```
+
+### Diagram with descriptive caption
+
+```mdx
+<frame caption="Figure 1: System architecture showing the relationship between services">
+
+[Your diagram or image content here]
+
+</frame>
+```
+
+## Editing in the editor
+
+<Tip>
+Click the border of the Frame to open the edit modal. You can also click the caption text directly to edit it.
+</Tip>
+
+The Frame has special clickable areas:
+- **Border edges**: Click any border (top, bottom, left, right) to edit frame settings
+- **Caption**: Click the caption text below the frame to edit it
+- **Content area**: Edit content normally inside the frame
+
+## TypeScript types
+
+```typescript
+interface FrameAttrs {
+  caption: string;      // Optional caption text
+  padding: string;      // Padding size: "sm" | "md" | "lg" | "xl"
+}
+
+// Padding class mapping
+function getPaddingClass(padding: string): string {
+  switch (padding) {
+    case "sm": return "p-2";   // 0.5rem
+    case "md": return "p-4";   // 1rem
+    case "lg": return "p-6";   // 1.5rem
+    case "xl": return "p-8";   // 2rem
+    default:   return "p-4";   // default to md
+  }
+}
+```
+
+## Styling details
+
+The Frame component applies:
+- Border using the theme's border color
+- Rounded corners (border-radius: 0.5rem)
+- Background using the card background color
+- Hover effect on borders when editable (for better discoverability)
+- Centered, italic caption in muted text color
+
+## Best practices
+
+1. **Use captions for context**: Add captions to diagrams, charts, or complex examples
+2. **Choose appropriate padding**: Use smaller padding for inline notes, larger padding for major sections
+3. **Don't over-nest**: Avoid putting frames inside frames - it reduces clarity
+4. **Consider accessibility**: Ensure framed content maintains good contrast and readability
+
+<Note>
+Frames automatically adapt to light and dark themes using CSS custom properties from your theme configuration.
+</Note>
+
+## Content support
+
+Frames can contain any block-level content:
+- Paragraphs and headings
+- Lists (ordered and unordered)
+- Code blocks and code snippets
+- Images and diagrams
+- Tables
+- Other components (except nested frames)

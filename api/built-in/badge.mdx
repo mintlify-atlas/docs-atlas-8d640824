@@ -1,0 +1,145 @@
+---
+title: Badge
+description: Inline badge component with multiple style variants
+---
+
+The Badge component is an inline element used to highlight status, labels, or categories within text content.
+
+## Node specification
+
+The badge is an inline, atomic node that cannot contain other content.
+
+<ParamField path="variant" type="string" default="'default'">
+  The visual style variant. Available options: `default`, `secondary`, `destructive`, `outline`
+</ParamField>
+
+<ParamField path="label" type="string" default="''">
+  The text content displayed in the badge
+</ParamField>
+
+## Usage
+
+### Insert via command menu
+
+Type `/badge` in the editor and select the Badge option from the command menu. The badge will be inserted with default styling that you can customize.
+
+### Insert via input rule
+
+Type `<badge` followed by optional attributes:
+
+<CodeGroup>
+```html Basic
+<badge label="New" />
+```
+
+```html With variant
+<badge variant="destructive" label="Deprecated" />
+```
+
+```html Secondary style
+<badge variant="secondary" label="Beta" />
+```
+</CodeGroup>
+
+### Programmatic insertion
+
+Use the `insertBadge` function to insert a badge programmatically:
+
+```typescript
+import { insertBadge } from "@/editor/components/badge";
+
+const transaction = insertBadge(editorState);
+view.dispatch(transaction);
+```
+
+## Attributes
+
+The badge node spec defines the following attributes:
+
+```typescript
+attrs: {
+  variant: { default: "default" },
+  label: { default: "" },
+}
+```
+
+## Variants
+
+The badge supports four visual variants:
+
+<ParamField path="default" type="variant">
+  Primary color scheme with `bg-primary` and `text-primary-foreground`
+</ParamField>
+
+<ParamField path="secondary" type="variant">
+  Secondary color scheme with `bg-secondary` and `text-secondary-foreground`
+</ParamField>
+
+<ParamField path="destructive" type="variant">
+  Red destructive color scheme with `bg-destructive` and `text-white`
+</ParamField>
+
+<ParamField path="outline" type="variant">
+  Outlined style with border and transparent background
+</ParamField>
+
+## Editing
+
+In edit mode, click the badge to open the badge edit modal where you can:
+
+- **Edit label**: Change the badge text
+- **Select variant**: Choose from the four available styles with live preview
+
+<Note>
+  The badge edit modal provides a visual preview of each variant style, making it easy to choose the right look for your content.
+</Note>
+
+## Styling
+
+The `badgeClassName` utility function generates the appropriate Tailwind classes based on the variant:
+
+```typescript
+function badgeClassName(variant: string) {
+  switch (variant) {
+    case "secondary":
+      return "inline-flex items-center justify-center rounded-md border border-transparent bg-secondary text-secondary-foreground px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 transition-[color,box-shadow] overflow-hidden";
+    case "destructive":
+      return "inline-flex items-center justify-center rounded-md border border-transparent bg-destructive text-white px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 transition-[color,box-shadow] overflow-hidden";
+    case "outline":
+      return "inline-flex items-center justify-center rounded-md border text-foreground px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 transition-[color,box-shadow] overflow-hidden";
+    case "default":
+    default:
+      return "inline-flex items-center justify-center rounded-md border border-transparent bg-primary text-primary-foreground px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 transition-[color,box-shadow] overflow-hidden";
+  }
+}
+```
+
+## DOM structure
+
+The badge renders as an inline element:
+
+```html
+<badge variant="default" class="inline-flex items-center...">
+  Badge Text
+</badge>
+```
+
+## Examples
+
+### Status badges
+
+```html
+<badge variant="default" label="Active" />
+<badge variant="secondary" label="Pending" />
+<badge variant="destructive" label="Error" />
+```
+
+### Feature labels
+
+```html
+This feature is <badge variant="secondary" label="Beta" /> and may change.
+```
+
+<Tip>
+  Use badges sparingly to maintain visual hierarchy. Too many badges can overwhelm your content.
+</Tip>

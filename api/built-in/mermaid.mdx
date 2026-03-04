@@ -1,0 +1,290 @@
+---
+title: Mermaid
+description: Create diagrams and flowcharts using Mermaid.js syntax
+---
+
+The Mermaid component renders diagrams, flowcharts, sequence diagrams, and other visualizations using [Mermaid.js](https://mermaid.js.org/) syntax.
+
+## Overview
+
+Mermaid components support a wide variety of diagram types:
+- Flowcharts and flow diagrams
+- Sequence diagrams
+- Class diagrams
+- State diagrams
+- Entity relationship diagrams
+- Gantt charts
+- Pie charts
+- Git graphs
+
+## Insertion
+
+Insert a Mermaid diagram using the command menu:
+
+1. Type `/` to open the command menu
+2. Search for "mermaid" or "diagram"
+3. Select the Mermaid option
+
+You can also type the input rule directly:
+```
+<mermaid />
+```
+
+## Attributes
+
+<ParamField path="code" type="string" default="graph TD\n    A[Start] --> B[End]">
+  The Mermaid diagram code. Must be valid Mermaid.js syntax. The editor validates syntax when you save.
+</ParamField>
+
+<ParamField path="size" type="string" default="md">
+  Controls the maximum width and height of the rendered diagram:
+  - `sm`: Small (300px × 200px max)
+  - `md`: Medium (500px × 300px max)
+  - `lg`: Large (700px × 400px max)
+  - `xl`: Extra large (900px × 500px max)
+  - `full`: Full width (100% × 600px max)
+</ParamField>
+
+<ParamField path="showBorder" type="boolean" default={true}>
+  Whether to display a border around the diagram. Toggle using the border button in the toolbar.
+</ParamField>
+
+## Node specification
+
+```typescript
+export const mermaidNodeSpec: NodeSpec = {
+  group: "block",
+  content: "text*",
+  marks: "",
+  code: true,
+  attrs: {
+    code: { default: "graph TD\n    A[Start] --> B[End]" },
+    size: { default: "md" },
+    showBorder: { default: true },
+  },
+  selectable: true,
+};
+```
+
+## Usage examples
+
+### Basic flowchart
+
+```mdx
+<mermaid>
+graph TD
+    A[Start] --> B[Process]
+    B --> C{Decision}
+    C -->|Yes| D[Action 1]
+    C -->|No| E[Action 2]
+    D --> F[End]
+    E --> F
+</mermaid>
+```
+
+### Sequence diagram
+
+```mdx
+<mermaid>
+sequenceDiagram
+    participant User
+    participant API
+    participant Database
+    
+    User->>API: Request data
+    API->>Database: Query
+    Database-->>API: Results
+    API-->>User: Response
+</mermaid>
+```
+
+### State diagram
+
+```mdx
+<mermaid>
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Processing: Start
+    Processing --> Success: Complete
+    Processing --> Failed: Error
+    Success --> [*]
+    Failed --> Idle: Retry
+</mermaid>
+```
+
+### Class diagram
+
+```mdx
+<mermaid>
+classDiagram
+    class User {
+        +String name
+        +String email
+        +login()
+        +logout()
+    }
+    class Admin {
+        +manageUsers()
+    }
+    User <|-- Admin
+</mermaid>
+```
+
+### Entity relationship diagram
+
+```mdx
+<mermaid>
+erDiagram
+    USER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    USER {
+        string id
+        string name
+        string email
+    }
+    ORDER {
+        string id
+        date orderDate
+        float total
+    }
+</mermaid>
+```
+
+### Gantt chart
+
+```mdx
+<mermaid>
+gantt
+    title Project Timeline
+    dateFormat YYYY-MM-DD
+    section Planning
+    Requirements :2024-01-01, 2024-01-15
+    Design :2024-01-16, 2024-02-01
+    section Development
+    Implementation :2024-02-02, 2024-03-15
+    Testing :2024-03-16, 2024-04-01
+</mermaid>
+```
+
+## Editing in the editor
+
+The Mermaid component provides a powerful editing experience:
+
+### Toolbar (appears on hover)
+
+- **Edit button**: Opens the code editor modal
+- **Border button**: Toggles diagram border visibility  
+- **Copy button**: Copies the Mermaid code to clipboard
+
+<Tip>
+Click the "Edit" button to open a modal editor with:
+- Syntax-highlighted code input
+- Size selector dropdown
+- Real-time syntax validation
+- Error messages for invalid syntax
+</Tip>
+
+### Keyboard shortcuts in modal
+
+- `Ctrl+Enter`: Save and close
+- `Escape`: Cancel and close
+
+## TypeScript types
+
+```typescript
+interface MermaidAttrs {
+  code: string;          // Mermaid diagram code
+  size: string;          // Size preset
+  showBorder: boolean;   // Border visibility
+}
+
+// Size style mapping
+function getDiagramSizeStyles(size: string): { 
+  maxWidth: string; 
+  maxHeight: string; 
+} {
+  switch (size) {
+    case "sm":   return { maxWidth: "300px", maxHeight: "200px" };
+    case "md":   return { maxWidth: "500px", maxHeight: "300px" };
+    case "lg":   return { maxWidth: "700px", maxHeight: "400px" };
+    case "xl":   return { maxWidth: "900px", maxHeight: "500px" };
+    case "full": return { maxWidth: "100%", maxHeight: "600px" };
+    default:     return { maxWidth: "500px", maxHeight: "300px" };
+  }
+}
+```
+
+## Mermaid configuration
+
+The editor initializes Mermaid with these default settings:
+
+```typescript
+mermaid.initialize({
+  startOnLoad: false,
+  theme: "dark",
+  securityLevel: "loose",
+  fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace",
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true,
+    curve: "cardinal",
+  },
+  gantt: {
+    useMaxWidth: true,
+    fontSize: 11,
+  },
+  sequence: {
+    useMaxWidth: true,
+  },
+});
+```
+
+## Error handling
+
+If the Mermaid code has syntax errors:
+- The editor validates code when you save in the modal
+- Error messages appear in the modal
+- Invalid diagrams show an error state with the error message
+- You must fix errors before saving
+
+## Best practices
+
+1. **Start simple**: Begin with basic diagrams and add complexity gradually
+2. **Use meaningful labels**: Make node and edge labels clear and descriptive
+3. **Choose the right diagram type**: Use flowcharts for processes, sequence for interactions, etc.
+4. **Keep it focused**: Don't try to show everything in one diagram
+5. **Test syntax**: Use the [Mermaid Live Editor](https://mermaid.live/) to prototype complex diagrams
+6. **Size appropriately**: Match diagram size to complexity and page layout
+
+<Note>
+For complex diagrams, start with the `lg` or `xl` size to ensure all details are visible. You can always adjust the size later.
+</Note>
+
+## Diagram syntax resources
+
+Learn more about Mermaid syntax:
+
+- [Official Documentation](https://mermaid.js.org/intro/)
+- [Flowchart Syntax](https://mermaid.js.org/syntax/flowchart.html)
+- [Sequence Diagram Syntax](https://mermaid.js.org/syntax/sequenceDiagram.html)
+- [Class Diagram Syntax](https://mermaid.js.org/syntax/classDiagram.html)
+- [State Diagram Syntax](https://mermaid.js.org/syntax/stateDiagram.html)
+- [ER Diagram Syntax](https://mermaid.js.org/syntax/entityRelationshipDiagram.html)
+- [Gantt Chart Syntax](https://mermaid.js.org/syntax/gantt.html)
+
+## Common issues
+
+### Diagram not rendering
+- Check for syntax errors in your Mermaid code
+- Ensure quotes and brackets are properly matched
+- Verify that node IDs don't contain special characters
+
+### Diagram too small/large
+- Use the size selector to choose a different preset
+- For very large diagrams, use the `full` size option
+- Consider splitting complex diagrams into multiple smaller ones
+
+### Styling looks wrong
+- The editor uses a dark theme by default
+- Diagrams automatically scale to fit their container
+- Border visibility can be toggled with the toolbar button

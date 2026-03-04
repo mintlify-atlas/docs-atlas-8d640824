@@ -1,0 +1,250 @@
+---
+title: Code snippet
+description: Syntax-highlighted code block with multiple languages and themes
+---
+
+The Code Snippet component provides a powerful code editor powered by CodeMirror with syntax highlighting, theme support, and interactive editing capabilities.
+
+## Node specification
+
+The code snippet is a block-level node that contains text content with code formatting.
+
+<ParamField path="language" type="string" default="'javascript'">
+  The programming language for syntax highlighting. Supported: `javascript`, `typescript`, `html`, `css`, `python`, `rust`, `sql`
+</ParamField>
+
+<ParamField path="title" type="string" default="''">
+  Optional title for the code block (currently unused in UI)
+</ParamField>
+
+<ParamField path="theme" type="string" default="'tokyoNight'">
+  The color theme. Available: `tokyoNight`, `githubDark`, `githubLight`, `vscodeDark`, `vscodeLight`
+</ParamField>
+
+<ParamField path="showBorder" type="boolean" default="true">
+  Whether to display a border around the code block. Automatically set to `false` when inside tabs.
+</ParamField>
+
+## Usage
+
+### Insert via command menu
+
+Type `/code` or `/snippet` in the editor and select the Code Snippet option from the command menu.
+
+### Insert via input rule
+
+Type three backticks to trigger code block creation:
+
+```
+```
+```
+
+### Programmatic insertion
+
+Use the `insertCodeSnippet` function to insert a code snippet programmatically:
+
+```typescript
+import { insertCodeSnippet } from "@/editor/components/code-snippet";
+
+const transaction = insertCodeSnippet(editorState);
+view.dispatch(transaction);
+```
+
+## Attributes
+
+The code snippet node spec defines the following attributes:
+
+```typescript
+attrs: {
+  language: { default: "javascript" },
+  title: { default: "" },
+  theme: { default: "tokyoNight" },
+  showBorder: { default: true },
+}
+```
+
+## Supported languages
+
+The code snippet uses CodeMirror language extensions:
+
+```typescript
+const languageExtensions: Record<string, ReturnType<typeof javascript>> = {
+  javascript: javascript({ jsx: true }),
+  typescript: javascript({ typescript: true, jsx: true }),
+  html: html(),
+  css: css(),
+  python: python(),
+  rust: rust(),
+  sql: sql(),
+};
+```
+
+<Note>
+  JavaScript and TypeScript support includes JSX/TSX syntax highlighting.
+</Note>
+
+## Themes
+
+Five color themes are available:
+
+<ParamField path="tokyoNight" type="theme">
+  Dark theme inspired by Tokyo Night color scheme
+</ParamField>
+
+<ParamField path="githubDark" type="theme">
+  Dark theme matching GitHub's dark mode
+</ParamField>
+
+<ParamField path="githubLight" type="theme">
+  Light theme matching GitHub's light mode
+</ParamField>
+
+<ParamField path="vscodeDark" type="theme">
+  Dark theme matching VS Code's default dark theme
+</ParamField>
+
+<ParamField path="vscodeLight" type="theme">
+  Light theme matching VS Code's default light theme
+</ParamField>
+
+## Editing features
+
+The code snippet provides rich editing capabilities:
+
+### Hover controls
+
+When hovering over a code block, controls appear in the top-right corner:
+
+1. **Language selector**: Dropdown to change syntax highlighting language
+2. **Theme selector**: Dropdown to change color theme
+3. **Border toggle**: Button to show/hide the border
+4. **Copy button**: Copies code to clipboard with visual feedback
+
+### Keyboard navigation
+
+Special keyboard shortcuts for navigation between the code block and the surrounding document:
+
+<ParamField path="ArrowUp" type="keyboard">
+  When cursor is at the start of the first line, exit to ProseMirror before the code block
+</ParamField>
+
+<ParamField path="ArrowDown" type="keyboard">
+  When cursor is at the end of the last line, exit to ProseMirror after the code block
+</ParamField>
+
+<ParamField path="Ctrl+Enter" type="keyboard">
+  Exit to ProseMirror after the code block and create a new paragraph if needed
+</ParamField>
+
+<ParamField path="Backspace" type="keyboard">
+  When the code block is empty, delete the entire node and return to ProseMirror
+</ParamField>
+
+### Auto-focus behavior
+
+When a new code snippet is created, the editor automatically focuses and positions the cursor at the end of the content.
+
+## Custom styling
+
+The code snippet applies custom styling to CodeMirror:
+
+```typescript
+const customStyling = EditorView.theme({
+  "&": {
+    borderRadius: "0.5rem",
+    overflow: "hidden",
+    backgroundColor: "transparent !important",
+  },
+  ".cm-scroller": {
+    padding: "0.5rem",
+    backgroundColor: "transparent !important",
+  },
+  ".cm-focused": {
+    outline: "none",
+  },
+});
+```
+
+## Event handling
+
+The code snippet uses `useStopEvent` to prevent ProseMirror from capturing input events:
+
+```typescript
+useStopEvent((view, event) => {
+  if (event instanceof InputEvent) return true;
+  return false;
+});
+```
+
+<Note>
+  The code snippet debounces content updates by 100ms to avoid excessive ProseMirror transactions while typing.
+</Note>
+
+## Integration with tabs
+
+When inserted inside a tabs component, the code snippet automatically disables its border:
+
+```typescript
+// Check if we're inside a tabs component
+const $pos = state.selection.$from;
+let insideTabs = false;
+for (let i = $pos.depth; i >= 0; i--) {
+  if ($pos.node(i).type.name === "tabs") {
+    insideTabs = true;
+    break;
+  }
+}
+
+const codeNode = codeNodeType.create({
+  language: "javascript",
+  showBorder: !insideTabs,
+});
+```
+
+## DOM structure
+
+The code snippet renders as:
+
+```html
+<pre language="javascript" title="" theme="tokyoNight" show-border="true">
+  <code><!-- text content --></code>
+</pre>
+```
+
+## Examples
+
+### JavaScript code
+
+```javascript
+const greeting = "Hello, World!";
+console.log(greeting);
+```
+
+### TypeScript with types
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+}
+
+const user: User = {
+  id: 1,
+  name: "John Doe"
+};
+```
+
+### Python example
+
+```python
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+print(fibonacci(10))
+```
+
+<Tip>
+  Use code snippets for technical documentation, tutorials, and API examples. The syntax highlighting improves readability and the copy button makes it easy for users to use your code.
+</Tip>

@@ -1,0 +1,341 @@
+---
+title: Theme system
+description: Configure light, dark, and auto theme modes with WebEditor's built-in theme detection
+---
+
+WebEditor includes a sophisticated theme system that automatically detects and applies the user's preferred color scheme while allowing manual overrides.
+
+## Theme modes
+
+WebEditor supports three theme modes:
+
+<CardGroup cols={3}>
+  <Card title="Light mode" icon="sun">
+    Fixed light color scheme
+  </Card>
+  <Card title="Dark mode" icon="moon">
+    Fixed dark color scheme
+  </Card>
+  <Card title="Auto mode" icon="monitor">
+    Follows system preferences
+  </Card>
+</CardGroup>
+
+## useTheme hook
+
+The `useTheme` hook provides theme management functionality:
+
+```tsx title="Hook interface"
+export type Theme = 'light' | 'dark' | 'auto';
+
+export function useTheme(): {
+  theme: Theme;
+  resolvedTheme: 'light' | 'dark';
+  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
+}
+```
+
+### Return values
+
+<Tabs>
+  <Tab title="theme">
+    The current theme setting (`'light'`, `'dark'`, or `'auto'`)
+    
+    ```tsx
+    const { theme } = useTheme();
+    console.log(theme); // 'auto'
+    ```
+  </Tab>
+  <Tab title="resolvedTheme">
+    The actual theme being applied (`'light'` or `'dark'`)
+    
+    This is always a concrete value, even when `theme` is `'auto'`
+    
+    ```tsx
+    const { resolvedTheme } = useTheme();
+    console.log(resolvedTheme); // 'dark'
+    ```
+  </Tab>
+  <Tab title="setTheme">
+    Function to change the theme
+    
+    ```tsx
+    const { setTheme } = useTheme();
+    setTheme('dark');
+    ```
+  </Tab>
+  <Tab title="toggleTheme">
+    Function to cycle through themes (auto → light → dark → auto)
+    
+    ```tsx
+    const { toggleTheme } = useTheme();
+    toggleTheme(); // Cycles to next theme
+    ```
+  </Tab>
+</Tabs>
+
+## Hook implementation
+
+The hook is implemented in `~/workspace/source/packages/webeditor/src/hooks/use-theme.ts`:
+
+### Initial theme detection
+
+```tsx title="~/workspace/source/packages/webeditor/src/hooks/use-theme.ts:11-25"
+const [theme, setThemeState] = useState<Theme>(() => {
+  // Check if we're in a browser environment
+  if (typeof window === 'undefined') {
+    return 'auto';
+  }
+
+  // First check localStorage for user preference
+  const savedTheme = localStorage.getItem('webeditor-theme') as Theme | null;
+  if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'auto')) {
+    return savedTheme;
+  }
+
+  // Default to auto mode
+  return 'auto';
+});
+```
+
+<Info>
+The theme preference is persisted to `localStorage` under the key `webeditor-theme`, so it survives page reloads.
+</Info>
+
+### Resolved theme calculation
+
+```tsx title="~/workspace/source/packages/webeditor/src/hooks/use-theme.ts:27-37"
+const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => {
+  if (typeof window === 'undefined') {
+    return 'light';
+  }
+
+  if (theme === 'auto') {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  return theme === 'dark' ? 'dark' : 'light';
+});
+```
+
+### System preference listener
+
+```tsx title="~/workspace/source/packages/webeditor/src/hooks/use-theme.ts:58-92"
+useEffect(() => {
+  if (typeof window === 'undefined') return;
+
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  const handleChange = (e: MediaQueryListEvent) => {
+    if (theme === 'auto') {
+      setResolvedTheme(e.matches ? 'dark' : 'light');
+    }
+  };
+
+  // Set initial resolved theme based on current preference
+  if (theme === 'auto') {
+    setResolvedTheme(mediaQuery.matches ? 'dark' : 'light');
+  } else {
+    setResolvedTheme(theme === 'dark' ? 'dark' : 'light');
+  }
+
+  // Use the newer addEventListener API if available, fallback to addListener
+  if (mediaQuery.addEventListener) {
+    mediaQuery.addEventListener('change', handleChange);
+  } else {
+    // @ts-ignore - Legacy API
+    mediaQuery.addListener(handleChange);
+  }
+
+  return () => {
+    if (mediaQuery.removeEventListener) {
+      mediaQuery.removeEventListener('change', handleChange);
+    } else {
+      // @ts-ignore - Legacy API
+      mediaQuery.removeListener(handleChange);
+    }
+  };
+}, [theme]);
+```
+
+<Note>
+The hook automatically listens for changes to the system's color scheme preference and updates the resolved theme accordingly when in auto mode.
+</Note>
+
+### Applying theme to DOM
+
+```tsx title="~/workspace/source/packages/webeditor/src/hooks/use-theme.ts:95-105"
+useEffect(() => {
+  if (typeof document !== 'undefined') {
+    const root = document.documentElement;
+
+    // Remove existing theme classes
+    root.classList.remove('dark', 'light');
+
+    // Add the resolved theme class
+    root.classList.add(resolvedTheme);
+  }
+}, [resolvedTheme]);
+```
+
+## Usage in WebEditor
+
+The WebEditor component initializes theme detection automatically:
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/index.tsx:70-72"
+export function WebEditor(props: { value?: string; editable?: boolean; onChange?: (doc: string) => void }) {
+  // Initialize theme detection and management - automatically detects browser's preferred theme
+  // and applies dark/light mode classes to the document root
+  const { theme, resolvedTheme } = useTheme();
+  
+  // Rest of component...
+}
+```
+
+<Info>
+You don't need to do anything to enable theme support - it's automatically initialized when you use the WebEditor component.
+</Info>
+
+## Customizing theme behavior
+
+You can create a theme toggle button:
+
+```tsx title="Example theme toggle"
+import { useTheme } from '@your-package/webeditor';
+import { Moon, Sun, Monitor } from 'lucide-react';
+
+function ThemeToggle() {
+  const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
+  
+  const Icon = theme === 'auto' ? Monitor : resolvedTheme === 'dark' ? Moon : Sun;
+  
+  return (
+    <button onClick={toggleTheme} title={`Current theme: ${theme}`}>
+      <Icon className="w-5 h-5" />
+    </button>
+  );
+}
+```
+
+## CSS variables and styling
+
+WebEditor uses CSS custom properties for theming. These are typically defined in your CSS:
+
+```css title="Example theme variables"
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 3.9%;
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 98%;
+  /* ... more variables */
+}
+
+.dark {
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 9%;
+  /* ... more variables */
+}
+```
+
+<Accordion title="Supported CSS variables">
+  WebEditor components use these CSS variables:
+  - `--background` - Main background color
+  - `--foreground` - Main text color
+  - `--card` - Card background
+  - `--card-foreground` - Card text
+  - `--popover` - Popover/menu background
+  - `--popover-foreground` - Popover text
+  - `--primary` - Primary accent color
+  - `--primary-foreground` - Primary accent text
+  - `--secondary` - Secondary accent color
+  - `--secondary-foreground` - Secondary accent text
+  - `--muted` - Muted background
+  - `--muted-foreground` - Muted text
+  - `--accent` - Accent background (hover states)
+  - `--accent-foreground` - Accent text
+  - `--border` - Border color
+  - `--ring` - Focus ring color
+</Accordion>
+
+## Server-side rendering
+
+The theme hook is SSR-safe:
+
+```tsx
+if (typeof window === 'undefined') {
+  return 'auto'; // Safe default for SSR
+}
+```
+
+<Note>
+During server-side rendering, the hook returns sensible defaults and skips browser-specific operations.
+</Note>
+
+## Theme persistence
+
+Theme preferences are saved to localStorage:
+
+```tsx title="~/workspace/source/packages/webeditor/src/hooks/use-theme.ts:39-45"
+const setTheme = (newTheme: Theme) => {
+  setThemeState(newTheme);
+
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('webeditor-theme', newTheme);
+  }
+};
+```
+
+## Theme toggle function
+
+The toggle function cycles through all three modes:
+
+```tsx title="~/workspace/source/packages/webeditor/src/hooks/use-theme.ts:47-56"
+const toggleTheme = () => {
+  if (theme === 'auto') {
+    setTheme('light');
+  } else if (theme === 'light') {
+    setTheme('dark');
+  } else {
+    setTheme('auto');
+  }
+};
+```
+
+<Info>
+The toggle cycle is: auto → light → dark → auto
+</Info>
+
+## Best practices
+
+<CardGroup cols={2}>
+  <Card title="Use auto mode by default" icon="monitor">
+    Auto mode respects user preferences and adapts to system settings
+  </Card>
+  <Card title="Provide manual override" icon="toggle-left">
+    Give users a way to override auto mode if they prefer
+  </Card>
+  <Card title="Persist preferences" icon="save">
+    The hook automatically saves to localStorage, ensuring consistency
+  </Card>
+  <Card title="Test both themes" icon="test-tube">
+    Ensure your custom components work in both light and dark modes
+  </Card>
+</CardGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Overview" href="/concepts/overview" icon="book-open">
+    Return to the architecture overview
+  </Card>
+  <Card title="API Reference" href="/api/hooks/use-theme" icon="code">
+    Explore the complete useTheme API
+  </Card>
+</CardGroup>

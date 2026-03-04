@@ -1,0 +1,166 @@
+---
+title: Basic usage
+description: Learn how to create and configure a basic WebEditor instance
+---
+
+## Installation
+
+First, install the WebEditor package:
+
+```bash
+npm install @devscribe-team/webeditor
+```
+
+## Creating a basic editor
+
+To create a basic editor instance, import the `WebEditor` component and its styles:
+
+```tsx
+import { WebEditor } from "@devscribe-team/webeditor";
+import "@devscribe-team/webeditor/styles";
+
+function App() {
+  return <WebEditor />;
+}
+```
+
+This creates a fully functional rich text editor with:
+- Markdown and JSX support
+- Command menu (/) for adding components
+- Marks menu (/) for text formatting
+- Automatic theme detection
+
+## Controlling editor content
+
+### The value prop
+
+The `value` prop controls the editor's initial content. It accepts MDX-like strings:
+
+```tsx
+import { WebEditor } from "@devscribe-team/webeditor";
+import "@devscribe-team/webeditor/styles";
+
+function App() {
+  const initialContent = `# Welcome
+
+This is a **rich text** editor with _markdown_ support.`;
+
+  return <WebEditor value={initialContent} />;
+}
+```
+
+<Note>
+The editor internally converts your markdown/MDX string to ProseMirror's document format. Changes to the `value` prop will reinitialize the editor state.
+</Note>
+
+### The onChange handler
+
+The `onChange` prop receives the editor's content as HTML after each change:
+
+```tsx
+import { useState } from "react";
+import { WebEditor } from "@devscribe-team/webeditor";
+import "@devscribe-team/webeditor/styles";
+
+function App() {
+  const [content, setContent] = useState("");
+
+  return (
+    <div>
+      <WebEditor
+        value={content}
+        onChange={(html) => {
+          setContent(html);
+          // Save to database, localStorage, etc.
+        }}
+      />
+    </div>
+  );
+}
+```
+
+<Warning>
+The `onChange` callback is triggered on **every transaction**, including selection changes. For production use, consider debouncing or throttling save operations.
+</Warning>
+
+## Making the editor read-only
+
+### The editable prop
+
+Set `editable={false}` to display content in read-only mode:
+
+```tsx
+import { WebEditor } from "@devscribe-team/webeditor";
+import "@devscribe-team/webeditor/styles";
+
+function App() {
+  const content = `# Documentation
+
+This content is read-only.`;
+
+  return <WebEditor value={content} editable={false} />;
+}
+```
+
+In read-only mode:
+- Users cannot edit text or modify components
+- The command hint ("Press '/' for commands") is hidden
+- Component edit controls (buttons, modals) are disabled
+- All interactive elements become non-interactive
+
+<Tip>
+Use read-only mode for displaying documentation, previewing content, or showing saved entries.
+</Tip>
+
+## Complete example
+
+Here's a complete example combining all the core props:
+
+```tsx
+import { useState } from "react";
+import { WebEditor } from "@devscribe-team/webeditor";
+import "@devscribe-team/webeditor/styles";
+
+function DocumentEditor() {
+  const [content, setContent] = useState(`# My Document
+
+Start writing here...`);
+  const [isEditing, setIsEditing] = useState(true);
+
+  const handleSave = (html: string) => {
+    setContent(html);
+    // Save to your backend
+    console.log("Saved:", html);
+  };
+
+  return (
+    <div className="container">
+      <div className="toolbar">
+        <button onClick={() => setIsEditing(!isEditing)}>
+          {isEditing ? "Preview" : "Edit"}
+        </button>
+      </div>
+
+      <WebEditor
+        value={content}
+        editable={isEditing}
+        onChange={handleSave}
+      />
+    </div>
+  );
+}
+```
+
+## Next steps
+
+<Steps>
+  <Step title="Theme management">
+    Learn how to control light/dark mode with the [useTheme hook](/guides/theme-management)
+  </Step>
+  <Step title="Custom components">
+    Explore the [built-in components](/guides/custom-components) available in WebEditor
+  </Step>
+  <Step title="Command menu">
+    Discover all available [commands](/guides/command-menu) for adding content
+  </Step>
+</Steps>

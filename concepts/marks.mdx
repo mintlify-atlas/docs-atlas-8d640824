@@ -1,0 +1,461 @@
+---
+title: Text marks system
+description: Learn about text marks for inline formatting including bold, italic, strikethrough, code, and tooltips
+---
+
+Marks are inline formatting attributes applied to text selections. Unlike nodes, marks don't represent standalone content but modify the appearance or behavior of text.
+
+## Marks menu
+
+The marks menu is triggered by selecting text and pressing `/`:
+
+<Steps>
+  <Step title="Select text">
+    Highlight the text you want to format
+  </Step>
+  <Step title="Open marks menu">
+    Press `/` with text selected
+  </Step>
+  <Step title="Apply mark">
+    Choose a mark from the menu to apply it
+  </Step>
+</Steps>
+
+### Marks menu trigger
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/index.tsx:296-308"
+// Check if we have a text selection - show marks menu
+if (!empty && hasTextSelection(state)) {
+  const coords = view.coordsAtPos(state.selection.from);
+  const { top, left } = clampDialogPosition(coords.bottom + 5, coords.left);
+
+  setMarksDialogPosition({ top, left });
+  setCurrentMenuType("marks");
+  openMarksDialog();
+  return true;
+}
+```
+
+<Info>
+The same `/` key opens either the command menu (empty line) or marks menu (text selected), providing a consistent interface for both.
+</Info>
+
+## Available marks
+
+WebEditor supports five text marks:
+
+### Basic formatting marks
+
+<Tabs>
+  <Tab title="Bold">
+    Makes text bold using the `strong` mark.
+    
+    **Markdown syntax:** `**bold text**`
+    
+    **Keyboard shortcut:** Coming soon
+    
+    ```tsx title="Mark definition"
+    {
+      id: "bold",
+      name: "Bold",
+      description: "Make text bold",
+      icon: Bold,
+      execute: (state, dispatch) => {
+        const { from, to } = state.selection;
+        if (from === to) return false;
+
+        if (dispatch) {
+          const mark = state.schema.marks.strong.create();
+          const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+          dispatch(tr);
+        }
+        return true;
+      },
+    }
+    ```
+  </Tab>
+  <Tab title="Italic">
+    Makes text italic using the `em` mark.
+    
+    **Markdown syntax:** `_italic text_`
+    
+    **Keyboard shortcut:** Coming soon
+    
+    ```tsx title="Mark definition"
+    {
+      id: "italic",
+      name: "Italic",
+      description: "Make text italic",
+      icon: Italic,
+      execute: (state, dispatch) => {
+        const { from, to } = state.selection;
+        if (from === to) return false;
+
+        if (dispatch) {
+          const mark = state.schema.marks.em.create();
+          const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+          dispatch(tr);
+        }
+        return true;
+      },
+    }
+    ```
+  </Tab>
+  <Tab title="Strikethrough">
+    Strikes through text using the `strikethrough` mark.
+    
+    **Markdown syntax:** `~~strikethrough text~~`
+    
+    **Keyboard shortcut:** Coming soon
+    
+    ```tsx title="Mark definition"
+    {
+      id: "strikethrough",
+      name: "Strikethrough",
+      description: "Strike through text",
+      icon: Strikethrough,
+      execute: (state, dispatch) => {
+        const { from, to } = state.selection;
+        if (from === to) return false;
+
+        if (dispatch) {
+          const mark = state.schema.marks.strikethrough.create();
+          const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+          dispatch(tr);
+        }
+        return true;
+      },
+    }
+    ```
+  </Tab>
+  <Tab title="Inline code">
+    Formats text as inline code using the `code` mark.
+    
+    **Markdown syntax:** `` `inline code` ``
+    
+    **Keyboard shortcut:** Coming soon
+    
+    ```tsx title="Mark definition"
+    {
+      id: "code",
+      name: "Inline Code",
+      description: "Format as inline code",
+      icon: Code,
+      execute: (state, dispatch) => {
+        const { from, to } = state.selection;
+        if (from === to) return false;
+
+        if (dispatch) {
+          const mark = state.schema.marks.code.create();
+          const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+          dispatch(tr);
+        }
+        return true;
+      },
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Tooltip mark
+
+The tooltip mark adds hover tooltips to text:
+
+```tsx title="Tooltip mark command"
+{
+  id: "tooltip",
+  name: "Tooltip",
+  description: "Add a tooltip to the selected text",
+  icon: Info,
+  type: "tooltip",
+  requiresAttributes: true,
+}
+```
+
+**Usage:**
+1. Select text
+2. Press `/` to open marks menu
+3. Select "Tooltip"
+4. Enter tooltip text in the modal
+
+<Note>
+Tooltips can be edited or removed by clicking on text with a tooltip already applied.
+</Note>
+
+## Mark schema definitions
+
+Marks are defined in the ProseMirror schema:
+
+### Strikethrough mark
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/schema.ts:38-54"
+strikethrough: {
+  inclusive: false,
+  parseDOM: [
+    { tag: "s" },
+    { tag: "del" },
+    { tag: "strike" },
+    {
+      style: "text-decoration",
+      getAttrs: (value: string | Node) => {
+        return typeof value === "string" && value.includes("line-through") ? {} : false;
+      },
+    },
+  ],
+  toDOM: () => ["s", 0],
+}
+```
+
+### Tooltip mark
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/schema.ts:56-79"
+tooltip_mark: {
+  attrs: {
+    tooltip: { default: "" },
+  },
+  inclusive: false,
+  parseDOM: [
+    {
+      tag: "span[data-tooltip]",
+      getAttrs: (dom) => ({
+        tooltip: (dom as HTMLElement).getAttribute("data-tooltip") || "",
+      }),
+    },
+  ],
+  toDOM: (mark) => [
+    "span",
+    {
+      "data-tooltip": mark.attrs.tooltip,
+      class:
+        "underline decoration-dotted decoration-muted-foreground cursor-help hover:decoration-foreground transition-colors relative group",
+    },
+    0,
+  ],
+}
+```
+
+## Mark commands
+
+Mark commands come in two types:
+
+<CardGroup cols={2}>
+  <Card title="Simple mark commands" icon="toggle-left">
+    Directly apply or toggle a mark on the selection
+    ```tsx
+    interface SimpleMarkCommand {
+      id: string;
+      name: string;
+      description: string;
+      icon: typeof Bold;
+      execute: (state, dispatch?) => boolean;
+    }
+    ```
+  </Card>
+  <Card title="Tooltip mark command" icon="info">
+    Requires additional input before applying
+    ```tsx
+    interface TooltipMarkCommand {
+      id: string;
+      name: string;
+      description: string;
+      icon: typeof Info;
+      type: "tooltip";
+      requiresAttributes: true;
+    }
+    ```
+  </Card>
+</CardGroup>
+
+## Applying marks programmatically
+
+You can apply marks using ProseMirror transactions:
+
+### Simple mark application
+
+```tsx
+const { from, to } = state.selection;
+const mark = state.schema.marks.strong.create();
+const tr = state.tr.addMark(from, to, mark);
+dispatch(tr);
+```
+
+### Tooltip mark with attributes
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/utils/marks-system.tsx:165-178"
+export function executeTooltipMark(
+  state: EditorState,
+  dispatch: (tr: Transaction) => void,
+  tooltipText: string,
+): boolean {
+  const { from, to } = state.selection;
+
+  if (from === to) return false; // No selection
+
+  const mark = state.schema.marks.tooltip_mark.create({ tooltip: tooltipText });
+  const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+  dispatch(tr);
+  return true;
+}
+```
+
+## Tooltip interaction
+
+Tooltips have special click handling for editing:
+
+```tsx title="Tooltip click plugin"
+export function createTooltipClickPlugin({
+  onTooltipClick,
+}: {
+  onTooltipClick: (tooltipText: string, from: number, to: number) => void;
+}) {
+  return new Plugin({
+    props: {
+      handleClick(view, pos, event) {
+        const target = event.target as HTMLElement;
+        
+        // Check if clicked element has a tooltip
+        if (target.hasAttribute('data-tooltip')) {
+          const tooltipText = target.getAttribute('data-tooltip') || '';
+          
+          // Find the range of the tooltip mark
+          const $pos = view.state.doc.resolve(pos);
+          const mark = $pos.marks().find(m => m.type.name === 'tooltip_mark');
+          
+          if (mark) {
+            // Calculate the full range of the mark
+            let from = pos;
+            let to = pos;
+            
+            onTooltipClick(tooltipText, from, to);
+            return true;
+          }
+        }
+        
+        return false;
+      },
+    },
+  });
+}
+```
+
+<Info>
+Clicking on text with a tooltip opens the tooltip editor modal, allowing you to modify or remove the tooltip.
+</Info>
+
+## Marks menu setup
+
+All mark commands are defined in `marksMenuSetup`:
+
+```tsx title="~/workspace/source/packages/webeditor/src/editor/utils/marks-system.tsx:33-111"
+export const marksMenuSetup: MarkCommandItem[] = [
+  {
+    id: "bold",
+    name: "Bold",
+    description: "Make text bold",
+    icon: Bold,
+    execute: (state, dispatch) => {
+      const { from, to } = state.selection;
+      if (from === to) return false;
+
+      if (dispatch) {
+        const mark = state.schema.marks.strong.create();
+        const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+        dispatch(tr);
+      }
+      return true;
+    },
+  },
+  {
+    id: "italic",
+    name: "Italic",
+    description: "Make text italic",
+    icon: Italic,
+    execute: (state, dispatch) => {
+      const { from, to } = state.selection;
+      if (from === to) return false;
+
+      if (dispatch) {
+        const mark = state.schema.marks.em.create();
+        const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+        dispatch(tr);
+      }
+      return true;
+    },
+  },
+  {
+    id: "strikethrough",
+    name: "Strikethrough",
+    description: "Strike through text",
+    icon: Strikethrough,
+    execute: (state, dispatch) => {
+      const { from, to } = state.selection;
+      if (from === to) return false;
+
+      if (dispatch) {
+        const mark = state.schema.marks.strikethrough.create();
+        const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+        dispatch(tr);
+      }
+      return true;
+    },
+  },
+  {
+    id: "code",
+    name: "Inline Code",
+    description: "Format as inline code",
+    icon: Code,
+    execute: (state, dispatch) => {
+      const { from, to } = state.selection;
+      if (from === to) return false;
+
+      if (dispatch) {
+        const mark = state.schema.marks.code.create();
+        const tr = state.tr.addMark(from, to, mark).removeStoredMark(mark);
+        dispatch(tr);
+      }
+      return true;
+    },
+  },
+  { separator: true },
+  {
+    id: "tooltip",
+    name: "Tooltip",
+    description: "Add a tooltip to the selected text",
+    icon: Info,
+    type: "tooltip",
+    requiresAttributes: true,
+  },
+];
+```
+
+## Helper functions
+
+The marks system provides utility functions:
+
+```tsx
+// Check if text is selected
+export function hasTextSelection(state: EditorState): boolean {
+  return !state.selection.empty;
+}
+
+// Check if command is a simple mark toggle
+export function isSimpleMarkCommand(command: MarkCommand): command is SimpleMarkCommand {
+  return "execute" in command;
+}
+
+// Check if command requires attributes (tooltip)
+export function isTooltipMarkCommand(command: MarkCommand): command is TooltipMarkCommand {
+  return "requiresAttributes" in command && command.requiresAttributes === true;
+}
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Theme system" href="/concepts/theme-system" icon="palette">
+    Learn about light, dark, and auto theme modes
+  </Card>
+  <Card title="Components" href="/concepts/components" icon="blocks">
+    Explore the component system and command menu
+  </Card>
+</CardGroup>
